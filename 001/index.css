@@ -1,0 +1,10 @@
+.sidebar-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-button {
+    width: 160px;
+    height: 40px;
+    background-color: purple;
+}
