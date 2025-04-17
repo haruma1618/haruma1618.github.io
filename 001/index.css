@@ -1,10 +1,11 @@
 body {
+    display: flex;
     background-color: #1c0040;
-    transition: 0.3s;
-  }
+    transition: 0.8s;
+}
   
 .sidebar-left {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     padding-right: 6px;
     width: fit-content;
@@ -27,4 +28,14 @@ body {
 
 .sidebar-button:hover {
     box-shadow: inset 0 0 1000px 1000px rgba(255, 255, 255, 0.15); /* used to lighten elements on hover */
+}
+
+.main-game-container {
+    display: flex;
+    justify-content: center;
+    margin-left: 7px;
+    flex-grow: 1;
+    border-style: solid;
+    border-color: white;
+    color: white;
 }
