@@ -16,7 +16,7 @@ body {
 
 .sidebar-button {
     margin: 2px;
-    width: min(max(20vw, 50px), 200px);
+    width: min(max(20vw, 50px), 250px);
     height: 40px;
     font-size: min(max(4vw, 8px), 20px);
     font-family: "Fira Mono", monospace;
