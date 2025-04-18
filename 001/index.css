@@ -4,6 +4,14 @@ body {
     transition: 0.8s;
 }
   
+button {
+    transition: 0.25s;
+}
+
+button:hover {
+    box-shadow: inset 0 0 1000px 1000px rgba(255, 255, 255, 0.18); /* used to lighten elements on hover */
+}
+
 .sidebar-left {
     display: inline-flex;
     flex-direction: column;
@@ -20,22 +28,125 @@ body {
     width: min(max(20vw, 50px), 250px);
     height: 40px;
     font-size: min(max(4vw, 8px), 20px);
-    font-family: "Fira Mono", monospace;
+    font-family: "Inconsolata", monospace;
     background-color: #800080;
     color: white;
-    transition: 0.3s;
-}
-
-.sidebar-button:hover {
-    box-shadow: inset 0 0 1000px 1000px rgba(255, 255, 255, 0.15); /* used to lighten elements on hover */
+    cursor: pointer;
 }
 
 .main-game-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     margin-left: 7px;
     flex-grow: 1;
+    font-family: "Inconsolata", monospace;
     border-style: solid;
     border-color: white;
     color: white;
+}
+
+#essence-amt {
+    margin-top: 10px;
+    font-size: 26px;
+}
+
+#essence-num {
+    color: #e4c9ff;
+    font-size: 36px;
+    display: inline;
+}
+
+#eps-amt {
+    font-size: 18px;
+}
+
+#eps-num1 {
+    color: #e4c9ff;
+    font-size: 26px;
+    display: inline;
+}
+
+#le-eps-amt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #c9d6ff;
+    font-size: 18px;
+    margin-top: 30px;
+}
+
+#eps-num2 {
+    color: #e4c9ff;
+    font-size: 26px;
+    display: inline;
+}
+
+#le-num {
+    color: #c9efff;
+    font-size: 36px;
+    display: inline;
+}
+
+#leps-num {
+    color: #c9efff;
+    font-size: 26px;
+    display: inline;
+}
+
+#le-power-num {
+    color: #c9efff;
+    font-size: 26px;
+    display: inline;
+}
+
+#production {
+    color: #c9efff;
+    font-size: 20px;
+    margin-top: 50px;
+}
+
+.lcp {
+    margin-top: 12px;
+}
+
+.lc-info {
+    display: inline-block;
+    width: 450px;
+}
+
+.lc-buy-btn-container {
+    display: inline-block;
+    position: relative;
+    margin-right: 30px;
+    width: 180px;
+    height: 34px;
+}
+
+.lc-buy-btn {
+    width: 100%;
+    height: 100%;
+    background-color: #295bff;
+    color: #c9efff;
+    font-size: 18px;
+    font-family: "Inconsolata", monospace;
+    border: 2px solid #0028ad;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.lc-buy-btn:hover {
+    color: #fafeff;
+}
+
+.lc-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 20%;
+    background-color: #ffffff;
+    border-radius: 4px;
+    opacity: 35%;
+    transition: 0.25s;
 }

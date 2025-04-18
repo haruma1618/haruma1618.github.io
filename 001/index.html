@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href='https://fonts.googleapis.com/css?family=Fira Mono' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel='stylesheet'>
     <link rel="stylesheet" href="index.css">
 </head>
 
@@ -15,11 +13,57 @@
     </div>
     <div class="main-game-container">
         <div id="essence-amt">
+            You have
+            <div id="essence-num"></div>
+            essence.
+        </div>
+        <div id="eps-amt">
+            You are producing
+            <div id="eps-num1"></div>
+            essence per second.
+        </div>
         
+        <div id="le-eps-amt">
+            <div>
+                You have
+                <div id="le-num"></div>
+                life energy (+
+                <div id="leps-num"></div>
+                /s).
+            </div>
+            <div>
+                Life energy raised to the
+                <div id="le-power-num"></div>
+                power is producing
+                <div id="eps-num2"></div>
+                essence/second.
+            </div>
+        </div>
+        
+        
+        <div id="production">
+            <div class="lcp" id="t1">
+                <div class="lc-info"></div>
+                <div class="lc-buy-btn-container">
+                    <button class="lc-buy-btn" onClick="buy_lc(1)">
+                        <div class="lc-buy-btn-content"></div>
+                        <div class="lc-progress"></div>   
+                    </button>
+                </div>
+            </div>
+            <div class="lcp" id="t2">
+                <div class="lc-info"></div>
+                <div class="lc-buy-btn-container">
+                    <button class="lc-buy-btn" onClick="buy_lc(2)">
+                        <div class="lc-buy-btn-content"></div>
+                        <div class="lc-progress"></div>   
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     
+    <script src="//cdn.rawgit.com/erosson/swarm-numberformat/v0.4.0/dist/swarm-numberformat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
     <script src="index.js"></script>
 </body>
-</html>
