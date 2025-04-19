@@ -7,7 +7,7 @@
 
 <body>
     <div class="menu-left">
-        <button class="menu-button" id="menu-life" onClick="menu_btn_click(this.id)">Life</button>
+        <button class="menu-button" id="menu-life" onClick="menu_btn_click(this.id)">Life Essence</button>
         <button class="menu-button" id="menu-achievements" onClick="menu_btn_click(this.id)">Achievements</button>
         <button class="menu-button" id="menu-options" onClick="menu_btn_click(this.id)">Options</button>
     </div>
@@ -30,8 +30,10 @@
             <button class="submenu-button" id="submenu-life-crystals" onClick="submenu_btn_click(this.id)">Life Crystals</button>
             <button class="submenu-button" id="submenu-upgrades" onClick="submenu_btn_click(this.id)">Upgrades</button>
         </div>
+        
+        <div class="switchable" id="achievements"></div>
 
-        <div id="production">
+        <div class="switchable" id="production">
             <div class="lcp">
                 <div class="lc-info-1">
                     <div class="lc-info-tier"></div>
@@ -43,10 +45,7 @@
                 </div>
 
                 <button class="lc-buy-btn">
-                    <div class="lc-buy-btn-content">
-                        <div class="lc-buy-btn-num"></div>
-                        <div class="lc-buy-btn-mul"></div>
-                    </div>
+                    <div class="lc-buy-btn-content"></div>
                     <div class="lc-progress"></div>   
                 </button>
             </div>

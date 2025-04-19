@@ -1,12 +1,13 @@
 body {
     display: flex;
     background-color: #2c0045;
-    transition: 0.8s;
+    transition: 0.7s;
 }
   
 button {
     font-family: "Inconsolata", monospace;
     cursor: pointer;
+    border-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.7) rgba(0, 0, 0, 0.7) rgba(0, 0, 0, 0.3);
     transition: 0.25s;
 }
 
@@ -27,23 +28,11 @@ button:hover {
 
 .menu-button {
     margin: 2px;
-    width: min(max(20vw, 50px), 250px);
+    width: max(17vw, 50px);
     height: 40px;
     font-size: min(max(4vw, 8px), 20px);
     font-family: "Inconsolata", monospace;
-    color: white;
-}
-
-#menu-life {
-    background-color: #7e0094;
-}
-
-#menu-achievements {
-    background-color: #b5a000;
-}
-
-#menu-options {
-    background-color: #707070;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .main-game-container {
@@ -72,7 +61,25 @@ button:hover {
     height: 32px;
     font-size: 18px;
     background-color: #7e0094;
-    color: #e4c9ff;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.bought-5 {
+    animation: 0.75s linear bought-5;
+}
+
+@keyframes bought-5 {
+    0% {background-color: #fff94d;}
+    100% {background-color: #7e0094;}
+}
+
+.bought-5-mul {
+    animation: 0.75s linear bought-5-mul;
+}
+
+@keyframes bought-5-mul {
+    0% {color: #fff94d;}
+    100% {color: #eddbff;}
 }
 
 .resource-amts {
@@ -109,7 +116,7 @@ button:hover {
     
 #production {
     display: none;
-    color: #c9efff;
+    color: #eddbff;
     font-size: 20px;
     margin-top: 30px;
     width: 80%;
@@ -119,8 +126,15 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #222222;
     height: 65px;
+}
+
+.lcp-even {
+    background-color: #180026;
+}
+
+.lcp-odd {
+    background-color: #250026;
 }
 
 .lc-info-1 {
@@ -149,10 +163,11 @@ button:hover {
     margin-right: 30px;
     min-width: 180px;
     height: 40px;
-    background-color: #295bff;
-    color: #c9efff;
+    background-color: #7e0094;
+    color: #eddbff;
     font-size: 18px;
-    border: 2px solid #0028ad;
+    border-width: 2px;
+    border-style: solid;
 }
 
 .lc-buy-btn:hover {
@@ -166,5 +181,18 @@ button:hover {
     height: 100%;
     background-color: #ffffff;
     opacity: 35%;
-    transition: 0.25s;
+}
+
+#achievements {
+    display: grid;
+    grid-template-columns: repeat(10, auto);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.achievement-box {
+    padding: 25px;
+    background-color: #444444;
+    text-align: center;
+    font-size: 20px;
 }
