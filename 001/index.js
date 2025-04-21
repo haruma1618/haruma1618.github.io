@@ -1,5 +1,6 @@
 "use strict";
-const game = {num_format: "scientific", menu: "life", submenu: "life-crystals", le: new Decimal(1000), lc_buy5mul: 2, lc: [], achievements: []};
+const game = {};
+const game_local = {menu: "life", submenu: "life-crystals"}
 
 const lc_base_costs = [new Decimal(10), new Decimal(100), new Decimal(1e3), new Decimal(1e6)];
 const lc_base_cost_muls = [new Decimal(100), new Decimal(1e3), new Decimal(1e4), new Decimal(1e5)];
@@ -11,10 +12,17 @@ const num_achievements = 20;
 const achievement_names = ["The Beginning", "Quadratic"];
 const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal"];
 
-let lc_object;
-for (let i = 0; i < lc_base_costs.length; i++) {
-    lc_object = {"unlocked": true, "num": new Decimal(0), "num_bought": 0, "ps": 0, "mul": new Decimal(1), "cost": lc_base_costs[i], "cost_mul": lc_base_cost_muls[i]};
-    game.lc.push(lc_object);
+function setup_game() {
+    const new_game = {num_format: "scientific", le: new Decimal(1000), lc_buy5mul: 2, lc: [], achievements: []};
+
+    for (let i = 0; i < lc_base_costs.length; i++) {
+        const lc_object = {"unlocked": true, "num": new Decimal(0), "num_bought": 0, "ps": 0, "mul": new Decimal(1), "cost": lc_base_costs[i], "cost_mul": lc_base_cost_muls[i]};
+        new_game.lc.push(lc_object);
+    }
+
+    for (let i in new_game) {
+        game[i] = new_game[i];
+    }
 }
 
 function setup_menu_buttons() {
@@ -33,26 +41,50 @@ function setup_lcp_elements() {
     
     for (let i = 0; i < lc_base_costs.length; i++) {
         document.getElementsByClassName("lc-buy-btn")[i].setAttribute("onclick", "buy_lc(" + (i + 1) + ")");
+
+        const classes = document.getElementsByClassName("lcp")[i].classList;
+        if (i === 0) {
+            classes.add("lcp-first");
+        } else if (i === lc_base_costs.length - 1) {
+            classes.add("lcp-last");
+        }
+
         if (i % 2 === 0) {
-            document.getElementsByClassName("lcp")[i].classList.add("lcp-even");
+            classes.add("lcp-even");
         } else {
-            document.getElementsByClassName("lcp")[i].classList.add("lcp-odd");
+            classes.add("lcp-odd");
         }
     }
 }
 
+function create_div(classes, text="") {
+    let new_div = document.createElement("div");
+    for (let i = 0; i < classes.length; i++) {
+        new_div.classList.add(classes[i]);
+    }
+
+    if (text) {
+        let text_node = document.createTextNode(text);
+        new_div.appendChild(text_node);
+    }
+
+    return new_div;
+}
+
 function setup_achievement_elements() {
     for (let i = 0; i < num_achievements; i++) {
-        let achievement_num = String(i).padStart(2, "0");
+        let achievement_num_str = String(i).padStart(2, "0");
 
-        let achievement_box = document.createElement("div");
-        achievement_box.classList.add("achievement-box");
-        let achievement_box_text = document.createTextNode(achievement_num);
-        achievement_box.appendChild(achievement_box_text);
+        let achievement_box = create_div(["achievement-box"], achievement_num_str)
+        document.getElementById("achievements").appendChild(achievement_box);
         
-        let achievement_box_popup = document.createElement("div");
-        achievement_box_popup.classList.add("achievement-box-popup");
+        let achievement_box_popup = create_div(["achievement-box-popup"])
         achievement_box.appendChild(achievement_box_popup);
+
+        if (0 <= i < 20) {
+            achievement_box.classList.add("achievement-box-life");
+            achievement_box_popup.classList.add("achievement-box-life");
+        }
 
         let achievement_box_popup_arrow = document.createElement("div");
         achievement_box_popup_arrow.classList.add("achievement-box-popup-arrow");
@@ -60,7 +92,7 @@ function setup_achievement_elements() {
 
         let achievement_name_el = document.createElement("div");
         achievement_name_el.classList.add("achievement-name");
-        let achievement_name_text = document.createTextNode(achievement_names[i] + " (" + achievement_num + ")");
+        let achievement_name_text = document.createTextNode(achievement_names[i] + " (" + achievement_num_str + ")");
         achievement_name_el.appendChild(achievement_name_text)
         achievement_box_popup.appendChild(achievement_name_el);
 
@@ -69,8 +101,6 @@ function setup_achievement_elements() {
         let achievement_desc_text = document.createTextNode(achievement_descriptions[i]);
         achievement_desc_el.appendChild(achievement_desc_text);
         achievement_box_popup.appendChild(achievement_desc_el);
-        
-        document.getElementById("achievements").appendChild(achievement_box);
     }
 }
 
@@ -107,8 +137,8 @@ function menu_btn_click(id) {
     }
     
     let menu_name = id.replace("menu-", "");
-    game.menu = menu_name;
-    game.submenu = menu_submenus[menu_name][0];
+    game_local.menu = menu_name;
+    game_local.submenu = menu_submenus[menu_name][0];
     
     replace_submenus(menu_submenus[menu_name]);
     
@@ -119,7 +149,7 @@ function menu_btn_click(id) {
 }
 
 function submenu_btn_click(id) {
-    game.submenu = id.replace("submenu-", "");
+    game_local.submenu = id.replace("submenu-", "");
 }
 
 function encode_save(obj) {
@@ -138,6 +168,13 @@ function parse_save(str) {
     return Function('"use strict";return (' + decoded_save_str + ')')();
 }
 
+function set_save(save) {
+    let new_save = parse_save(save);
+    for (let i in new_save) {
+        game[i] = new_save[i];
+    }
+}
+
 function copy_text_to_clipboard(text) {
     navigator.clipboard.writeText(text).then(
       function() {alert("Copied to clipboard!");},
@@ -145,22 +182,50 @@ function copy_text_to_clipboard(text) {
     );
 }
 
-function export_save() {
+function export_save_btn() {
     copy_text_to_clipboard(encode_save(game));
 }
 
-function import_save() {
+function import_save_btn() {
     let save = prompt("Enter your savefile:");
     if (save != null) {
-        let new_save = parse_save(save)
-        for (let i in new_save) {
-            game[i] = new_save[i];
-        }
+        set_save(save);
+        add_popup("saving", "Save imported");
+    }
+}
+
+function save_game() {
+    let save = encode_save(game);
+    document.cookie = "save=" + save + ";path=/";
+}
+
+function save_game_btn() {
+    save_game();
+    add_popup("saving", "Game saved");
+}
+
+function hard_reset() {
+    setup_game();
+    document.cookie = "save=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+}
+
+function hard_reset_btn() {
+    let confirmation = prompt("Are you sure you want to hard reset? Type \"Yes\" to confirm:")
+
+    if (confirmation === "Yes") {
+        hard_reset();
+    }
+}
+
+function load_save_cookie() {
+    const save_cookie_value = ('; '+document.cookie).split(`; save=`).pop().split(';')[0];
+    if (save_cookie_value) {
+        set_save(save_cookie_value);
     }
 }
 
 function buy_lc(tier) {
-    lc_object = game.lc[tier - 1];
+    let lc_object = game.lc[tier - 1];
     
     if (game.le.gte(lc_object.cost)) {
         game.le = game.le.sub(lc_object.cost);
@@ -181,23 +246,42 @@ function buy_lc(tier) {
     }
 }
 
+function add_popup(type, text) {
+    const popup_container = document.getElementsByClassName("popup-container")[0];
+
+    const new_popup = document.createElement("div");
+    new_popup.classList.add("popup-temp");
+    new_popup.classList.add("popup-" + type);
+    const node = document.createTextNode(text);
+    new_popup.appendChild(node);
+    popup_container.prepend(new_popup);
+    
+    setTimeout(function() {popup_container.removeChild(new_popup);}, 4000);
+}
+
 function check_achievements() {
-    if (!(0 in game.achievements) && game.lc[0].num_bought > 0) {
+    if (!(game.achievements.includes(0)) && game.lc[0].num_bought > 0) {
         game.achievements.push(0);
+        add_popup("achievement", "Achievement: "+ achievement_names[0]);
+    }
+
+    if (!(game.achievements.includes(1)) && game.lc[1].num_bought > 0) {
+        game.achievements.push(1);
+        add_popup("achievement", "Achievement: "+ achievement_names[1]);
     }
     
     const achievement_boxes = document.getElementsByClassName("achievement-box");
     const achievement_box_popups = document.getElementsByClassName("achievement-box-popup");
-    for (let i = 0; i < num_achievements; i++) {
-        if (i in game.achievements) {
-            achievement_boxes[i].style.backgroundColor = "#d6a800";
-            achievement_box_popups[i].style.backgroundColor = "#d6a800";
+    for (let i = 0; i < achievement_boxes.length; i++) {
+        if (game.achievements.includes(i)) {
+            achievement_boxes[i].classList.add("achievement-box-completed");
+            achievement_box_popups[i].classList.add("achievement-box-completed");
         }
     }
 }
 
 function life_menu_update() {
-    switch (game.submenu) {
+    switch (game_local.submenu) {
         case "life-crystals":
             document.getElementById("production").style.display = "inline-block";
             
@@ -237,7 +321,7 @@ function life_menu_update() {
 }
 
 function achievements_menu_update() {
-    switch (game.submenu) {
+    switch (game_local.submenu) {
         case "achievements":
             document.getElementById("achievements").style.display = "grid";
             break;
@@ -247,7 +331,7 @@ function achievements_menu_update() {
 }
 
 function options_menu_update() {
-    switch (game.submenu) {
+    switch (game_local.submenu) {
         case "saving":
             document.getElementById("options-saving").style.display = "inline-block";
             break;
@@ -255,13 +339,6 @@ function options_menu_update() {
             break;
     }
 }
-
-function init() {
-    setup_menu_buttons();
-    setup_lcp_elements();
-    setup_achievement_elements();
-}
-init();
 
 let start;
 function update(t) {
@@ -282,6 +359,8 @@ function update(t) {
     let leps = game.lc[0].num.mul(game.lc[0].mul).mul(1);
     let e_gain = leps.mul(seconds);
     game.le = game.le.add(e_gain);
+
+    check_achievements();
     
     // Update HTML elements
   
@@ -293,7 +372,7 @@ function update(t) {
         switchable_elements[i].style.display = "none";
     }
     
-    switch (game.menu) {
+    switch (game_local.menu) {
         case "life":
             life_menu_update();
             break;
@@ -307,8 +386,6 @@ function update(t) {
             break;
     }
     
-    check_achievements();
-    
     // console.log(Math.round(1/seconds))
     // console.log(document.getElementsByClassName("lc-progress")[0].style.width)
     // console.log(game.achievements)
@@ -316,4 +393,15 @@ function update(t) {
     requestAnimationFrame(update);
 }
 
-requestAnimationFrame(update);
+window.onload = () => {
+    if (!document.cookie) {
+        setup_game();
+    } else {
+        load_save_cookie();
+    }
+    setInterval(save_game, 5000);
+    setup_menu_buttons();
+    setup_lcp_elements();
+    setup_achievement_elements();
+    requestAnimationFrame(update);
+};

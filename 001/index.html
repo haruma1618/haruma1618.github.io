@@ -11,6 +11,8 @@
         <button class="menu-button" id="menu-achievements" onClick="menu_btn_click(this.id)">Achievements</button>
         <button class="menu-button" id="menu-options" onClick="menu_btn_click(this.id)">Options</button>
     </div>
+
+    <div class="popup-container"></div>
     
     <div class="main-game-container">
         <div class="resource-amts">
@@ -52,8 +54,10 @@
         </div>
 
         <div class="switchable" id="options-saving">
-            <button class="options-button" id="options-export-save-button" onClick="export_save()">Export save</button>
-            <button class="options-button" id="options-import-save-button" onClick="import_save()">Import save</button>
+            <button class="options-button" id="options-save-button" onClick="save_game_btn()">Save</button>
+            <button class="options-button" id="options-export-save-button" onClick="export_save_btn()">Export save</button>
+            <button class="options-button" id="options-import-save-button" onClick="import_save_btn()">Import save</button>
+            <button class="options-button" id="options-hard-reset-button" onClick="hard_reset_btn()">Hard reset</button>
         </div>
     </div>
     
