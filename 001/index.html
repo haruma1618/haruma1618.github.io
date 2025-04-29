@@ -6,62 +6,85 @@
 </head>
 
 <body>
-    <div class="menu-left">
-        <button class="menu-button" id="menu-life" onClick="menu_btn_click(this.id)">Life Essence</button>
-        <button class="menu-button" id="menu-achievements" onClick="menu_btn_click(this.id)">Achievements</button>
-        <button class="menu-button" id="menu-options" onClick="menu_btn_click(this.id)">Options</button>
-    </div>
-
     <div class="popup-container"></div>
-    
-    <div class="main-game-container">
-        <div class="resource-amts">
-            <div id="le-amt">
-                You have
-                <div id="le-num"></div>
-                life essence.
-            </div>
-            <div id="leps-amt">
-                You are producing
-                <div id="leps-num"></div>
-                life essence per second.
-            </div>
-        </div>
-        
-        <div id="submenu-buttons">
-            <button class="submenu-button" id="submenu-life-crystals" onClick="submenu_btn_click(this.id)">Life Crystals</button>
-            <button class="submenu-button" id="submenu-upgrades" onClick="submenu_btn_click(this.id)">Upgrades</button>
-        </div>
-        
-        <div class="switchable" id="achievements"></div>
 
-        <div class="switchable" id="production">
-            <div class="lcp">
-                <div class="lc-info-1">
-                    <div class="lc-info-tier"></div>
-                    <div class="lc-info-mul"></div>
+    <div class="offline-progress-container">
+        <div class="offline-progress-title">Offline Progress</div>
+        <div class="offline-progress-text"></div>
+        <button class="offline-progress-exit-btn" onClick="document.getElementsByClassName('offline-progress-container')[0].style.display='none'">OK</button>
+    </div>
+
+    <div class="total-container">
+        <div class="news-ticker-container">
+            <div class="news-ticker">
+                <div class="ticker-message" style="position: relative; left:100%;"></div>
+            </div>
+        </div>
+        <div class="game-container">
+            <div class="menu-left">
+                <button class="menu-button" id="menu-life" onClick="menu_btn_click(this.id)">Life Essence</button>
+                <button class="menu-button" id="menu-achievements" onClick="menu_btn_click(this.id)">Achievements</button>
+                <button class="menu-button" id="menu-statistics" onClick="menu_btn_click(this.id)">Statistics</button>
+                <button class="menu-button" id="menu-options" onClick="menu_btn_click(this.id)">Options</button>
+            </div>
+            
+            <div class="main-game-container">
+                <div class="resource-amts">
+                    <div id="le-amt">
+                        You have
+                        <div id="le-num"></div>
+                        life essence.
+                    </div>
+                    <div id="leps-amt">
+                        You are producing
+                        <div id="leps-num"></div>
+                        life essence per second.
+                    </div>
                 </div>
-                <div class="lc-info-2">
-                    <div class="lc-info-num"></div>
-                    <div class="lc-info-gain"></div>
+                
+                <div id="submenu-buttons">
+                    <button class="submenu-button" id="submenu-life-crystals" onClick="submenu_btn_click(this.id)">Life Crystals</button>
+                    <button class="submenu-button" id="submenu-upgrades" onClick="submenu_btn_click(this.id)">Upgrades</button>
+                </div>
+                
+                <div class="switchable" id="achievements"></div>
+
+                <div class="switchable" id="statistics"></div>
+
+                <div class="switchable" id="production">
+                    <div class="lcp">
+                        <div class="lc-info-1">
+                            <div class="lc-info-tier"></div>
+                            <div class="lc-info-mul"></div>
+                        </div>
+                        <div class="lc-info-2">
+                            <div class="lc-info-num"></div>
+                            <div class="lc-info-gain"></div>
+                        </div>
+
+                        <button class="lc-buy-btn">
+                            <div class="lc-buy-btn-content"></div>
+                            <div class="lc-progress"></div>   
+                        </button>
+                    </div>
                 </div>
 
-                <button class="lc-buy-btn">
-                    <div class="lc-buy-btn-content"></div>
-                    <div class="lc-progress"></div>   
-                </button>
-            </div>
-        </div>
+                <div class="switchable options-container" id="options-saving">
+                    <button class="options-button" id="options-save-button" onClick="save_game_btn()">Save</button>
+                    <button class="options-button" id="options-export-save-button" onClick="export_save_btn()">Export save</button>
+                    <button class="options-button" id="options-import-save-button" onClick="import_save_btn()">Import save</button>
+                    <button class="options-button" id="options-hard-reset-button" onClick="hard_reset_btn()">Hard reset</button>
+                </div>
 
-        <div class="switchable" id="options-saving">
-            <button class="options-button" id="options-save-button" onClick="save_game_btn()">Save</button>
-            <button class="options-button" id="options-export-save-button" onClick="export_save_btn()">Export save</button>
-            <button class="options-button" id="options-import-save-button" onClick="import_save_btn()">Import save</button>
-            <button class="options-button" id="options-hard-reset-button" onClick="hard_reset_btn()">Hard reset</button>
+                <div class="switchable options-container" id="options-visual">
+                    <button class="options-button" id="options-sgd-button" onClick="sgd_btn()">Superior Graphic Design</button>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <script src="//cdn.rawgit.com/erosson/swarm-numberformat/v0.4.0/dist/swarm-numberformat.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script> 
+    <script src="https://cdn.rawgit.com/erosson/swarm-numberformat/v0.4.0/dist/swarm-numberformat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
     <script src="index.js"></script>
 </body>
