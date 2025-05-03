@@ -6,36 +6,66 @@ const lc_base_costs = [new Decimal(5), new Decimal(100), new Decimal(5e3), new D
 const lc_base_cost_muls = [new Decimal(400), new Decimal(3e3), new Decimal(6e4), new Decimal(1.5e6)];
 
 const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
-const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visual", "statistics": "Statistics"};
+const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visuals", "statistics": "Statistics"};
 const menu_colors = {"menu-life": ["#2c0045", "#7e0094"], "menu-achievements": ["#403b00", "#b5a000"], "menu-options": ["#363636", "#707070"], "menu-statistics": ["#400020", "#900048"]};
 const num_achievements = 20;
 
 const ticker_messages = {
-    "0": "This game only has a news ticker because I'm too lazy to actually update the game",
-    "1": "Here's a fun maths puzzle: Timothy has a cube of blocks with side length n. Is it possible for Timothy to rearrange the blocks into two smaller cubes so that no blocks are left over? Prove your result.",
-    "2": "Hey Vsauce, Michael here. This game is very balanced... or is it?",
-    "3": "Your dice rolls: {0} - {1}",
-    "4": "The world population has increased by about {0} since you first started playing this game",
-    "5": "The downwards subside disappear meme is still ENORMOUS!",
-    "6": "(ﾉ✿◕ヮ◕)ﾉ*:･ﾟ✧ (❛◡❛✿)",
-    "7": "◢▆▅▄▃ 溫╰(〞︶〝) ╯馨 ▃▄▅▆◣",
-    "8": "Why are people leaving food in the oven at 175C for 15 minutes when they could just leave it at 157500C for 1 second?",
-    "9": "New update drops in just 12!! hours!!!!",
-    "10": "Water bucket, RELEASE!",
-    "11": "RIP Pope Francis 44²-45²",
-    "12": "20% of car crashes are caused by drunk drivers, and 80% are caused by sober drivers. Therefore, it's 4x safer to drive drunk than to drive sober",
-    "13": "2^246829917-1 is prime. Source: just trust me bro",
-    "14": "The least beautiful equation: π^(0*ei)=1",
-    "15": "Many people are annoyed that τ equals 2π even though it looks like half of π. I propose that we switch the values of π and τ, so that π ≈ 6.28 and τ ≈ 3.14. This will definitely not cause any confusion whatsoever.",
-    "16": "E=mc^2, and a^2+b^2=c^2, therefore E=m(a^2+b^2)",
-    "17": "Ab Bb Db Bb F F Eb Ab Bb Db Bb Eb Eb Db C Bb Ab Bb Db Bb Db Eb C Bb Ab Ab Eb Db",
-    "18": "No, don't base-64 decode that save file!",
-    "19": "Why are all of the function names lowercase and separated by underscores? The Python brainrot is real",
-    "20": "I... am STEVE.",
-    "21": "We can use lightyears and lightseconds to measure distance, but how about lightkilometers and lightparsecs to measure time?",
-    "22": "La-la-la-lava, ch-ch-ch-chicken, Steve's lava chicken yeah it's tasty as hell, ooh, mamacita, now you're ringin' the bell, crispy and juicy now you're havin' a snack, ooh, super spicy, it's a LAVA ATTACK!",
-    "23": "Waxed lightly weathered cut copper stairs!",
-    "24": "Here's a random unicode character: {0}"
+    "n0": "This game only has a news ticker because I'm too lazy to actually update the game",
+    "n1": "Here's a fun maths puzzle: Timothy has a cube of blocks with side length n. Is it possible for him to rearrange the blocks into two smaller cubes such that no blocks are left over? Prove your result.",
+    "n2": "Hey Vsauce, Michael here. This game is very balanced... or is it?",
+    "n3": "Your 5 dice rolls: {0} - {1}",
+    "n4": "The world population has increased by ~{0} since you first started playing this game",
+    "n5": "The downwards subside disappear meme is still ENORMOUS!",
+    "n6": "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ (❛◡❛✿)",
+    "n7": "◢▆▅▄▃ 溫╰(〞︶〝) ╯馨 ▃▄▅▆◣",
+    "n8": "Why are people leaving food in the oven at 175C for 15 minutes when they could just leave it at 157500C for 1 second?",
+    "n9": "New update drops in just 12!! hours!!!!",
+    "n10": "Water bucket, RELEASE!",
+    "n11": "RIP Pope Francis 44²-45²",
+    "n12": "20% of car crashes are caused by drunk drivers, and 80% are caused by sober drivers. Therefore, it's 4x safer to drive drunk than to drive sober",
+    "n13": "2^{0}-1 is prime. Source: just trust me bro",
+    "n14": "The least beautiful equation: π^(0*ei)=1",
+    "n15": "Many people are annoyed that τ equals 2π even though it looks like half of π. I propose that we swap the values of π and τ, so that π ≈ 6.28 and τ ≈ 3.14. This will not cause any confusion whatsoever.",
+    "n16": "E=mc^2, and a^2+b^2=c^2, therefore E=m(a^2+b^2)",
+    "n17": "Try playing this: Ab Bb Db Bb F F Eb Ab Bb Db Bb Eb Eb Db C Bb Ab Bb Db Bb Db Eb C Bb Ab Ab Eb Db",
+    "n18": "No, don't base-64 decode that save file!",
+    "n19": "Why are all of the function names lowercase and separated by underscores? The Python brainrot is real",
+    "n20": "I... am STEVE.",
+    "n21": "We can use lightyears and lightseconds to measure distance, but how about lightkilometers and lightparsecs to measure time?",
+    "n22": "La-la-la-lava, ch-ch-ch-chicken, Steve's lava chicken, yeah it's tasty as hell, ooh, mamacita, now you're ringin' the bell, crispy and juicy now you're havin' a snack, ooh, super spicy, it's a LAVA ATTACK!!",
+    "n23": "Waxed lightly weathered cut copper stairs!",
+    "n24": "Here's a random unicode character: {0}",
+    "n25": "<div style='transform: scale(-1, -1);'>This ticker message was made in Australia</div>",
+    "n26": "The following statement is true. The previous statement is false.",
+    "n27": "100 dudes would destroy a gorilla, what are these guys talking about?",
+    "n28": "Whoa-ohoh-ohoh, this is how the story goes",
+    "n29": "<div class='superior-gd'>My graphic design is superior</div>",
+    "n30": "\"Uhh, what?\" - Joe Biden",
+    "n31": "Since you first started playing this game, you have moved about {0} mm due to continental drift",
+    "n32": "This news ticker contains at least 3 rickrolls, can you find them all?",
+    "n33": "<a class='special-text' href='https://www.youtube.com/watch?v=dQw4w9WgXcQ' target='_blank' rel='noopener noreferrer'>I'm a special link, click me!</a>",
+    "n34": "🥷🐘🌋🐘🚀 🦒🐙🥷🥷🥑 🦒♾️🌋🐘 ☯️🐙☂️ ☂️🐼",
+    "n35": "Ts pmo bro icl 🥀",
+    "n36": "*ଘ(੭*ˊᵕˋ)੭* ੈ✩‧₊˚ &nbsp;&nbsp;(╹◡╹๑)",
+    "n37": "(´,,•ω•,,)♡",
+    "n38": "Here's a randomly generated number: {0}. If it's above 1e1000, consider yourself very lucky!",
+    "n39": "<div class='ghost-text'>oooooh, it's a ghost news message</div>",
+    "n40": "Chicken jockey!",
+    "n41": "Erm, what the sigma?",
+    "n42": "10 billion guys vs Godzilla, who would win?",
+    "n43": "{0} life essence? That's a MASSIVE number. You know what else is massive?",
+    "n44": "Change da world, my final message. goodbye",
+    "n45": "The dev isn't releasing updates because he was one of the 100 men drafted to fight the gorilla",
+    "n46": "The high increase grow meme is still MINUSCULE!",
+    "n47": "No one: R\\{1}&nbsp; Absolutely no one: [0,∞)\\{1}",
+    "n48": "An infinite number of mathematicians walk into a bar. The first orders a beer. The second disagrees with the first, and cancels his order. The third orders a beer, and the fourth cancels the third's order. The bartender pours them all 1/2 a beer, saying, \"You guys gotta know your Cesàro summations.\"",
+    "n49": "2025 is the first square year since 1936, but you know what's even crazier? 2026 is the first year of the form n^2+1 since 1937!",
+    "n50": "New update releases at {0} UTC!",
+    "n51": "ξ( ✿＞◡❛)▄︻▇▇〓▄︻┻┳═一",
+    "n52": "The lion does WHAT to the small dog when it barks?!",
+    "n53": "What the heck is base \"10\"? I only use base 1, not base 1111111111 or base 1111111111111111 like you weirdos.",
+    "n54": "Fun fact: Every news message has a 1/256 chance of becoming shiny. Good luck collecting them all!"
 };
 
 const achievement_names = ["The Beginning", "Quadratic"];
@@ -43,7 +73,7 @@ const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crysta
 let request_update = false;
 
 function setup_game() {
-    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", le: new Decimal(1000), lc_buy5mul: 2, lc: [], achievements: []};
+    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", ticker_enabled: true, ticker_speed: 1, le: new Decimal(1000), lc_buy5mul: 2, lc: [], achievements: [], upgrades_unlocked: false};
 
     for (let i = 0; i < lc_base_costs.length; i++) {
         const lc_object = {"unlocked": (i === 0), "num": new Decimal(0), "num_bought": 0, "ps": 0, "mul": new Decimal(1), "cost": lc_base_costs[i], "cost_mul": lc_base_cost_muls[i]};
@@ -154,7 +184,7 @@ function get_news_message(key=null) {
     }
     let random_message = ticker_messages[random_key];
 
-    if (random_key === "3") {
+    if (random_key === "n3") {
         let dice_rolls = [];
         for (let i = 0; i < 5; i++) {
             dice_rolls.push((Math.floor(Math.random()*6)+1));
@@ -185,11 +215,28 @@ function get_news_message(key=null) {
         } else {
             random_message = random_message.replace("{1}", "Nothing... Better luck next time!");
         }
-    } else if (random_key === "4") {
+    } else if (random_key === "n4") {
         random_message = random_message.replace("{0}", Math.floor(2.535 * (Date.now() - game.start_time) / 1000));
-    } else if (random_key === "24") {
-        let random_unicode = String.fromCharCode.apply(null, Array.from(Array(1), () => Math.floor(Math.random()*65536)))
+    } else if (random_key === "n13") {
+        random_message = random_message.replace("{0}", 200_000_000+Math.floor(Math.random()*800_000_000));
+    } else if (random_key === "n24") {
+        let random_unicode = String.fromCharCode.apply(null, Array.from(Array(1), () => Math.floor(Math.random()*65536)));
         random_message = random_message.replace("{0}", random_unicode);
+    } else if (random_key === "n31") {
+        random_message = random_message.replace("{0}", (0.4753 * (Date.now() - game.start_time) / 1000000000).toFixed(5));
+    } else if (random_key === "n38") {
+        let rnum = new Decimal(Math.random());
+        random_message = random_message.replace("{0}", F(Decimal.pow(10, rnum.pow(-2).sub(1)).sub(1), 3, 2));
+    } else if (random_key === "n43") {
+        random_message = random_message.replace("{0}", F(game.le, 3));
+    } else if (random_key === "n50") {
+        let date = new Date();
+        date.setTime(date.getTime() + (12*60*60*1000));
+        random_message = random_message.replace("{0}", date.toISOString().slice(0, 19).replace("T", " "));
+    }
+
+    if (Math.random() <= 1 / 256) {
+        random_message = "<div class='shiny-text'>" + random_message + "</div>"
     }
 
     return random_message;
@@ -203,7 +250,7 @@ function update_ticker() {
         game_local.ticker_pos = 100;
         ticker.innerHTML = get_news_message();
     } else {
-        game_local.ticker_pos -= 0.1;
+        game_local.ticker_pos -= game.ticker_speed * 0.075;
     }
 
     ticker.style.left = game_local.ticker_pos.toString() + "%";
@@ -323,6 +370,10 @@ function load_save_cookie() {
     }
 }
 
+function toggle_ticker_btn() {
+    game.ticker_enabled = game.ticker_enabled ? false : true;
+}
+
 function sgd_btn() {
     let all_elements = document.querySelectorAll('*');
 
@@ -438,7 +489,8 @@ function life_menu_update() {
             toggle_classList("lc-buy-btn", i => game.lc[i].cost.gt(game.le), "lc-buy-btn-unaffordable")
             set_class_property("lc-buy-btn-content", i => "Cost: " + F(game.lc[i].cost, 3, 0) + " LE", "innerHTML");
             set_class_property("lc-progress", i => game.lc[i].num_bought % 5 * 20 + "%", "style", "width");
-            
+            document.getElementById("submenu-upgrades").style.display = game.upgrades_unlocked ? "inline-block" : "none";
+
             break;
         default:
             break;
@@ -462,6 +514,12 @@ function options_menu_update() {
             break;
         case "visual":
             document.getElementById("options-visual").style.display = "inline-block";
+
+            document.getElementById("options-ticker-button").innerHTML = game.ticker_enabled ? "Enable news ticker" : "Disable news ticker";
+            let ticker_speed_value = document.getElementById("options-ticker-speed-slider").value;
+            let new_ticker_speed = Math.pow(4, 2*ticker_speed_value-1);
+            game.ticker_speed = new_ticker_speed;
+            document.getElementById("options-ticker-speed-text").innerHTML = "Ticker speed: " + Math.round(100*new_ticker_speed) + "%"
         default:
             break;
     }
@@ -545,13 +603,24 @@ function update(t) {
 
     check_achievements();
     
-    // Update HTML elements
+    // Update news ticker
+
+    document.getElementsByClassName("news-ticker-container")[0].style.display = game.ticker_enabled ? "inline-block" : "none";
 
     update_ticker();
-  
+    
+    // Update other HTML
+
     document.getElementById("le-num").innerHTML = F(game.le, 3);
     document.getElementById("leps-num").innerHTML = F(leps, 3);
     
+    if (game.lc[3].num.gte(1) && !game.upgrades_unlocked) {
+        add_popup("feature", "New feature unlocked: Upgrades")
+        game.upgrades_unlocked = true;
+    }
+
+    // Switch & update menus
+
     const switchable_elements = document.getElementsByClassName("switchable");
     for (let i = 0; i < switchable_elements.length; i++) {
         switchable_elements[i].style.display = "none";
@@ -593,6 +662,7 @@ window.onload = () => {
     setup_menu_buttons();
     setup_lcp_elements();
     setup_achievement_elements();
+    get_news_message();
     handle_offline_progress();
     start = 0;
     request_update = true;
