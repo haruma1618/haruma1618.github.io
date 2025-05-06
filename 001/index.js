@@ -1,15 +1,4 @@
 "use strict";
-const game = {};
-const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
-
-const lc_base_costs = [new Decimal(5), new Decimal(100), new Decimal(5e3), new Decimal(1e6)];
-const lc_base_cost_muls = [new Decimal(400), new Decimal(3e3), new Decimal(6e4), new Decimal(1.5e6)];
-
-const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
-const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visuals", "statistics": "Statistics"};
-const menu_colors = {"menu-life": ["#2c0045", "#7e0094"], "menu-achievements": ["#403b00", "#b5a000"], "menu-options": ["#363636", "#707070"], "menu-statistics": ["#400020", "#900048"]};
-const num_achievements = 20;
-
 const ticker_messages = {
     "n0": "This game only has a news ticker because I'm too lazy to actually update the game",
     "n1": "Here's a fun maths puzzle: Timothy has a cube of blocks with side length n. Is it possible for him to rearrange the blocks into two smaller cubes such that no blocks are left over? Prove your result.",
@@ -19,7 +8,7 @@ const ticker_messages = {
     "n5": "The downwards subside disappear meme is still ENORMOUS!",
     "n6": "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ (❛◡❛✿)",
     "n7": "◢▆▅▄▃ 溫╰(〞︶〝) ╯馨 ▃▄▅▆◣",
-    "n8": "Why are people leaving food in the oven at 175C for 15 minutes when they could just leave it at 157500C for 1 second?",
+    "n8": "Why are people leaving food in the oven at 175C for 15 minutes when they could just leave it at 157500000C for 1 millisecond?",
     "n9": "New update drops in just 12!! hours!!!!",
     "n10": "Water bucket, RELEASE!",
     "n11": "RIP Pope Francis 44²-45²",
@@ -27,13 +16,13 @@ const ticker_messages = {
     "n13": "2^{0}-1 is prime. Source: just trust me bro",
     "n14": "The least beautiful equation: π^(0*ei)=1",
     "n15": "Many people are annoyed that τ equals 2π even though it looks like half of π. I propose that we swap the values of π and τ, so that π ≈ 6.28 and τ ≈ 3.14. This will not cause any confusion whatsoever.",
-    "n16": "E=mc^2, and a^2+b^2=c^2, therefore E=m(a^2+b^2)",
+    "n16": "E=mc^2, and a^2+b^2=c^2, therefore E=ma^2+mb^2",
     "n17": "Try playing this: Ab Bb Db Bb F F Eb Ab Bb Db Bb Eb Eb Db C Bb Ab Bb Db Bb Db Eb C Bb Ab Ab Eb Db",
     "n18": "No, don't base-64 decode that save file!",
     "n19": "Why are all of the function names lowercase and separated by underscores? The Python brainrot is real",
     "n20": "I... am STEVE.",
     "n21": "We can use lightyears and lightseconds to measure distance, but how about lightkilometers and lightparsecs to measure time?",
-    "n22": "La-la-la-lava, ch-ch-ch-chicken, Steve's lava chicken, yeah it's tasty as hell, ooh, mamacita, now you're ringin' the bell, crispy and juicy now you're havin' a snack, ooh, super spicy, it's a LAVA ATTACK!!",
+    "n22": "FLINT AND STEEL 🗣️🗣️🔥🔥🔥",
     "n23": "Waxed lightly weathered cut copper stairs!",
     "n24": "Here's a random unicode character: {0}",
     "n25": "<div style='transform: scale(-1, -1);'>This ticker message was made in Australia</div>",
@@ -54,35 +43,72 @@ const ticker_messages = {
     "n40": "Chicken jockey!",
     "n41": "Erm, what the sigma?",
     "n42": "10 billion guys vs Godzilla, who would win?",
-    "n43": "{0} life essence? That's a MASSIVE number. You know what else is massive?",
+    "n43": "{0} life essence? That's a MASSIVE number",
     "n44": "Change da world, my final message. goodbye",
     "n45": "The dev isn't releasing updates because he was one of the 100 men drafted to fight the gorilla",
     "n46": "The high increase grow meme is still MINUSCULE!",
     "n47": "No one: R\\{1}&nbsp; Absolutely no one: [0,∞)\\{1}",
-    "n48": "An infinite number of mathematicians walk into a bar. The first orders a beer. The second disagrees with the first, and cancels his order. The third orders a beer, and the fourth cancels the third's order. The bartender pours them all 1/2 a beer, saying, \"You guys gotta know your Cesàro summations.\"",
+    "n48": "An infinite number of mathematicians walk into a bar. The first orders a beer. The second disagrees with him, and cancels the first mathematician's order. The third orders a beer, and the fourth cancels the third's order. The bartender pours them all 1/2 a beer, saying, \"You guys gotta know your Cesàro summations.\"",
     "n49": "2025 is the first square year since 1936, but you know what's even crazier? 2026 is the first year of the form n^2+1 since 1937!",
     "n50": "New update releases at {0} UTC!",
     "n51": "ξ( ✿＞◡❛)▄︻▇▇〓▄︻┻┳═一",
     "n52": "The lion does WHAT to the small dog when it barks?!",
     "n53": "What the heck is base \"10\"? I only use base 1, not base 1111111111 or base 1111111111111111 like you weirdos.",
-    "n54": "Fun fact: Every news message has a 1/256 chance of becoming shiny. Good luck collecting them all!"
+    "n54": "Fun fact: Every news message has a 1/256 chance of becoming shiny. Good luck collecting them all!",
 };
 
-const achievement_names = ["The Beginning", "Quadratic"];
-const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal"];
+const game = {};
+const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
+
+const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(6e12), new Decimal(1e17), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
+const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
+
+const lc_upgrade_names = ["Crystal Synergy", "LE Synergy"]
+const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("6e9")];
+const lc_upgrade_cost_muls = [new Decimal("1e6"), new Decimal("1e8")];
+const lc_upgrade_cost_muls_quad = [new Decimal("1e2"), new Decimal("1e4")];
+
+const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
+const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visual/Gameplay", "statistics": "Statistics"};
+const menu_colors = {"menu-life": ["#2c0045", "#7e0094"], "menu-achievements": ["#403b00", "#b5a000"], "menu-options": ["#363636", "#707070"], "menu-statistics": ["#400020", "#900048"]};
+const num_achievements = 20;
+
+const achievement_names = ["The Beginning", "f(x)=ax²+bx+c", "HL3, for real this time", "Tetrahedral Crystal", "Hexagons are the bestagons", "Infinity doesn't exist here", "Decahedral Crystal", "The Best Number", "", "", "See, this totally isn't AD"];
+const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal", "Buy a T3 Life Crystal", "Buy a T4 Life Crystal", "Buy a T6 Life Crystal", "Buy a T8 Life Crystal", "Buy a T10 Life Crystal", "Buy a T12 Life Crystal", "", "", "Buy 3 Life Upgrades"];
+
+const pressed_keys = {};
 let request_update = false;
 
 function setup_game() {
-    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", ticker_enabled: true, ticker_speed: 1, le: new Decimal(1000), lc_buy5mul: 2, lc: [], achievements: [], upgrades_unlocked: false};
+    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", ticker_enabled: true, ticker_speed: 1, le: new Decimal(10), total_le: new Decimal(0), lc_buy5mul: 2, lc: [], upgrades: [], lc_purchase_mode: 0, achievements: [], upgrades_unlocked: false};
 
     for (let i = 0; i < lc_base_costs.length; i++) {
-        const lc_object = {"unlocked": (i === 0), "num": new Decimal(0), "num_bought": 0, "ps": 0, "mul": new Decimal(1), "cost": lc_base_costs[i], "cost_mul": lc_base_cost_muls[i]};
+        const lc_object = {unlocked: (i === 0), num: new Decimal(0), num_bought: 0, buy_boosts: 0, ps: 0, mul: new Decimal(1), cost: lc_base_costs[i], cost_mul: lc_base_cost_muls[i]};
         new_game.lc.push(lc_object);
+    }
+
+    for (let i = 0; i < lc_upgrade_costs.length; i++) {
+        const upg_object = {unlocked: false, num: 0, cost: lc_upgrade_costs[i], cost_mul: lc_upgrade_cost_muls[i], cost_mul_quad: lc_upgrade_cost_muls_quad[i]};
+        new_game.upgrades.push(upg_object);
     }
 
     for (let i in new_game) {
         game[i] = new_game[i];
     }
+}
+
+function create_div(classes, text="") {
+    let new_div = document.createElement("div");
+    for (let i = 0; i < classes.length; i++) {
+        new_div.classList.add(classes[i]);
+    }
+
+    if (text) {
+        let text_node = document.createTextNode(text);
+        new_div.appendChild(text_node);
+    }
+
+    return new_div;
 }
 
 function setup_menu_buttons() {
@@ -107,7 +133,7 @@ function setup_menu_buttons() {
     replace_submenus(menu_submenus["life"])
 }
 
-function setup_lcp_elements() {
+function setup_lc_elements() {
     for (let i = 1; i < lc_base_costs.length; i++) {
         const lcp_clone = document.getElementsByClassName("lcp")[0].cloneNode(true);
         const production_el = document.getElementById("production");
@@ -115,7 +141,7 @@ function setup_lcp_elements() {
     }
     
     for (let i = 0; i < lc_base_costs.length; i++) {
-        document.getElementsByClassName("lc-buy-btn")[i].setAttribute("onclick", "buy_lc(" + (i + 1) + ")");
+        document.getElementsByClassName("lc-buy-btn")[i].setAttribute("onclick", "buy_lc(" + i + ")");
 
         const classes = document.getElementsByClassName("lcp")[i].classList;
 
@@ -125,20 +151,15 @@ function setup_lcp_elements() {
             classes.add("lcp-odd");
         }
     }
-}
 
-function create_div(classes, text="") {
-    let new_div = document.createElement("div");
-    for (let i = 0; i < classes.length; i++) {
-        new_div.classList.add(classes[i]);
+    for (let i = 1; i < lc_upgrade_costs.length; i++) {
+        const lc_upgrade_clone = document.getElementsByClassName("lc-upgrade")[0].cloneNode(true);
+        document.getElementById("lc-upgrades-rep-container").appendChild(lc_upgrade_clone);
     }
 
-    if (text) {
-        let text_node = document.createTextNode(text);
-        new_div.appendChild(text_node);
+    for (let i = 0; i < lc_upgrade_costs.length; i++) {
+        document.getElementsByClassName("lc-upgrade-buy-btn")[i].setAttribute("onclick", "buy_lc_upgrade(" + i + ")");
     }
-
-    return new_div;
 }
 
 function setup_achievement_elements() {
@@ -146,7 +167,7 @@ function setup_achievement_elements() {
         let achievement_num_str = String(i).padStart(2, "0");
 
         let achievement_box = create_div(["achievement-box"], achievement_num_str)
-        document.getElementById("achievements").appendChild(achievement_box);
+        document.getElementById("achievement-boxes").appendChild(achievement_box);
         
         let achievement_box_popup = create_div(["achievement-box-popup"])
         achievement_box.appendChild(achievement_box_popup);
@@ -174,24 +195,27 @@ function setup_achievement_elements() {
     }
 }
 
-function get_news_message(key=null) {
-    let random_key;
-    if (key) {
-        random_key = key;
-    } else {
-        let ticker_keys = Object.keys(ticker_messages);
-        random_key = ticker_keys[ticker_keys.length * Math.random() << 0];
-    }
-    let random_message = ticker_messages[random_key];
+function setup_html_elements() {
+    setup_menu_buttons();
+    setup_lc_elements();
+    setup_achievement_elements();
+}
 
-    if (random_key === "n3") {
+function get_news_message(key=null) {
+    if (!key) {
+        let ticker_keys = Object.keys(ticker_messages);
+        key = ticker_keys[ticker_keys.length * Math.random() << 0];
+    }
+    let message = ticker_messages[key];
+
+    if (key === "n3") {
         let dice_rolls = [];
         for (let i = 0; i < 5; i++) {
             dice_rolls.push((Math.floor(Math.random()*6)+1));
         }
         dice_rolls.sort();
 
-        random_message = random_message.replace("{0}", dice_rolls.join(" "));
+        message = message.replace("{0}", dice_rolls.join(" "));
 
         const counts = {};
         for (const num of dice_rolls) {
@@ -200,53 +224,53 @@ function get_news_message(key=null) {
         const count_values = Object.values(counts);
 
         if (count_values.includes(5)) {
-            random_message = random_message.replace("{1}", "FIVE OF A KIND!!! +500 aura!!!");
+            message = message.replace("{1}", "FIVE OF A KIND!!! +500 aura!!!");
         } else if (count_values.includes(4)) {
-            random_message = random_message.replace("{1}", "Four of a kind!! +100 aura!!");
+            message = message.replace("{1}", "Four of a kind!! +100 aura!!");
         } else if (count_values.includes(3) && count_values.includes(2)) {
-            random_message = random_message.replace("{1}", "Full house!! +50 aura!!");
+            message = message.replace("{1}", "Full house!! +50 aura!!");
         } else if (JSON.stringify(dice_rolls) === JSON.stringify([1,2,3,4,5]) ||
                    JSON.stringify(dice_rolls) === JSON.stringify([2,3,4,5,6])) {
-            random_message = random_message.replace("{1}", "Straight!! +50 aura!!");
+            message = message.replace("{1}", "Straight!! +50 aura!!");
         } else if (count_values.filter(x => x === 2).length === 2) {
-            random_message = random_message.replace("{1}", "Two pair! +10 aura!");
+            message = message.replace("{1}", "Two pair! +10 aura!");
         } else if (count_values.includes(3)) {
-            random_message = random_message.replace("{1}", "Triplet! +10 aura!");
+            message = message.replace("{1}", "Triplet! +10 aura!");
         } else {
-            random_message = random_message.replace("{1}", "Nothing... Better luck next time!");
+            message = message.replace("{1}", "Nothing... Better luck next time!");
         }
-    } else if (random_key === "n4") {
-        random_message = random_message.replace("{0}", Math.floor(2.535 * (Date.now() - game.start_time) / 1000));
-    } else if (random_key === "n13") {
-        random_message = random_message.replace("{0}", 200_000_000+Math.floor(Math.random()*800_000_000));
-    } else if (random_key === "n24") {
+    } else if (key === "n4") {
+        message = message.replace("{0}", Math.floor(2.535 * (Date.now() - game.start_time) / 1000));
+    } else if (key === "n13") {
+        message = message.replace("{0}", 2*(100_000_000+Math.floor(Math.random()*400_000_000))+1);
+    } else if (key === "n24") {
         let random_unicode = String.fromCharCode.apply(null, Array.from(Array(1), () => Math.floor(Math.random()*65536)));
-        random_message = random_message.replace("{0}", random_unicode);
-    } else if (random_key === "n31") {
-        random_message = random_message.replace("{0}", (0.4753 * (Date.now() - game.start_time) / 1000000000).toFixed(5));
-    } else if (random_key === "n38") {
+        message = message.replace("{0}", random_unicode);
+    } else if (key === "n31") {
+        message = message.replace("{0}", (0.4753 * (Date.now() - game.start_time) / 1000000000).toFixed(5));
+    } else if (key === "n38") {
         let rnum = new Decimal(Math.random());
-        random_message = random_message.replace("{0}", F(Decimal.pow(10, rnum.pow(-2).sub(1)).sub(1), 3, 2));
-    } else if (random_key === "n43") {
-        random_message = random_message.replace("{0}", F(game.le, 3));
-    } else if (random_key === "n50") {
+        message = message.replace("{0}", F(Decimal.pow(10, rnum.pow(-2).sub(1)).sub(1), 3, 2));
+    } else if (key === "n43") {
+        message = message.replace("{0}", F(game.le, 3));
+    } else if (key === "n50") {
         let date = new Date();
         date.setTime(date.getTime() + (12*60*60*1000));
-        random_message = random_message.replace("{0}", date.toISOString().slice(0, 19).replace("T", " "));
+        message = message.replace("{0}", date.toISOString().slice(0, 19).replace("T", " "));
     }
 
     if (Math.random() <= 1 / 256) {
-        random_message = "<div class='shiny-text'>" + random_message + "</div>"
+        message = "<div class='shiny-text'>" + message + "</div>"
     }
 
-    return random_message;
+    return message;
 }
 
 function update_ticker() {
-    const ticker_container = document.getElementsByClassName("news-ticker")[0];
-    const ticker = document.getElementsByClassName("ticker-message")[0];
+    const ticker_container = document.getElementById("news-ticker");
+    const ticker = document.getElementById("ticker-message");
 
-    if (!ticker.innerHTML || game_local.ticker_pos * ticker_container.offsetWidth / 100 < -ticker.offsetWidth - 250) {
+    if (!ticker.innerHTML || !request_update || game_local.ticker_pos * ticker_container.offsetWidth / 100 < -ticker.offsetWidth - 250) {
         game_local.ticker_pos = 100;
         ticker.innerHTML = get_news_message();
     } else {
@@ -296,6 +320,7 @@ function menu_btn_click(id) {
 
 function submenu_btn_click(id) {
     game_local.submenu = id.replace("submenu-", "");
+    document.getElementById(id).classList.remove("new-feature");
 }
 
 function encode_save(obj) {
@@ -374,6 +399,20 @@ function toggle_ticker_btn() {
     game.ticker_enabled = game.ticker_enabled ? false : true;
 }
 
+function num_format_btn() {
+    switch (game.num_format) {
+        case "scientific": 
+            game.num_format = "engineering";
+            break;
+        case "engineering":
+            game.num_format = "standard";
+            break;
+        case "standard":
+            game.num_format = "scientific";
+            break;
+    }
+}
+
 function sgd_btn() {
     let all_elements = document.querySelectorAll('*');
 
@@ -388,25 +427,79 @@ function sgd_btn() {
     }
 }
 
-function buy_lc(tier) {
-    let lc_object = game.lc[tier - 1];
+function lc_purchase_mode_btn() {
+    switch (game.lc_purchase_mode) {
+        case 0:
+            game.lc_purchase_mode = 1;
+            break;
+        case 1:
+            game.lc_purchase_mode = 2;
+            break;
+        case 2:
+            game.lc_purchase_mode = 0;
+            break;
+    }
+}
+
+function buy_lc_max(iters=0) {
+    if (game_local.menu === "life" && game_local.submenu === "life-crystals") {
+        let cheapest_lc_id = 0;
+        let cheapest_lc_cost = game.lc[0].cost;
+
+        for (let i = 1; i < game.lc.length; i++) {
+            if (game.lc[i].cost.lte(cheapest_lc_cost)) {
+                cheapest_lc_cost = game.lc[i].cost;
+                cheapest_lc_id = i;
+            }
+        }
+        
+        let lc_afforded = buy_lc(cheapest_lc_id, 1);
+        if (lc_afforded && iters < 1000) {
+            buy_lc_max(iters + 1);
+        }
+    }  
+}
+
+function buy_lc(id, purchase_mode=game.lc.purchase_mode) {
+    let lc_object = game.lc[id];
     
     if (game.le.gte(lc_object.cost)) {
         game.le = game.le.sub(lc_object.cost);
         lc_object.num_bought += 1;
         lc_object.num = lc_object.num.add(1);
         
-        let lc_btn_element = document.getElementsByClassName("lc-buy-btn")[tier - 1];
-        let lc_mul_element = document.getElementsByClassName("lc-info-mul")[tier - 1];
+        let lc_btn_element = document.getElementsByClassName("lc-buy-btn")[id];
+        let lc_mul_element = document.getElementsByClassName("lc-info-mul")[id];
         
         if (lc_object.num_bought % 5 === 0) {
             lc_object.cost = lc_object.cost.mul(lc_object.cost_mul);
-            lc_object.mul = lc_object.mul.mul(game.lc_buy5mul);
+            lc_object.buy_boosts += 1;
             lc_btn_element.classList.add("bought-5");
             lc_mul_element.classList.add("bought-5-mul");
             setTimeout(function(){lc_btn_element.classList.remove("bought-5");}, 750);
             setTimeout(function(){lc_mul_element.classList.remove("bought-5-mul");}, 750);
+        } else {
+            if (purchase_mode === 1) {
+                buy_lc(id);
+            }
         }
+
+        if (purchase_mode === 2) {
+            buy_lc(id);
+        }
+
+        return true;
+    }
+    return false;
+}
+
+function buy_lc_upgrade(id) {
+    let upg_object = game.upgrades[id];
+
+    if (game.le.gte(upg_object.cost)) {
+        upg_object.num += 1;
+        upg_object.cost = upg_object.cost.mul(upg_object.cost_mul);
+        upg_object.cost_mul = upg_object.cost_mul.mul(upg_object.cost_mul_quad);
     }
 }
 
@@ -423,24 +516,72 @@ function add_popup(type, text) {
     setTimeout(function() {popup_container.removeChild(new_popup);}, 4000);
 }
 
-function check_achievements() {
-    if (!(game.achievements.includes(0)) && game.lc[0].num_bought > 0) {
-        game.achievements.push(0);
-        add_popup("achievement", "Achievement: "+ achievement_names[0]);
+function get_achievement_condition(id) {
+    switch (id) {
+        case 0:
+            return game.lc[0].num_bought > 0;
+        case 1:
+            return game.lc[1].num_bought > 0;
+        case 2:
+            return game.lc[2].num_bought > 0;
+        case 3:
+            return game.lc[3].num_bought > 0;
+        case 4:
+            return game.lc[5].num_bought > 0;
+        case 5:
+            return game.lc[7].num_bought > 0;
+        case 6:
+            return game.lc[9].num_bought > 0;
+        case 7:
+            return game.lc[11].num_bought > 0;
+        case 10:
+            let upgrades_bought = 0;
+            for (let i = 0; i < game.upgrades.length; i++) {
+                upgrades_bought += game.upgrades[i].num;
+            }
+            return upgrades_bought >= 3;
+        default:
+            return false;
     }
+}
 
-    if (!(game.achievements.includes(1)) && game.lc[1].num_bought > 0) {
-        game.achievements.push(1);
-        add_popup("achievement", "Achievement: "+ achievement_names[1]);
+function check_achievements() {
+    for (let i = 0; i < achievement_names.length; i++) {
+        if (!(game.achievements.includes(i)) && get_achievement_condition(i)) {
+            game.achievements.push(i);
+            add_popup("achievement", "Achievement: "+ achievement_names[i]);
+        }
     }
     
     const achievement_boxes = document.getElementsByClassName("achievement-box");
     const achievement_box_popups = document.getElementsByClassName("achievement-box-popup");
-    for (let i = 0; i < achievement_boxes.length; i++) {
+    for (let i = 0; i < achievement_names.length; i++) {
         if (game.achievements.includes(i)) {
             achievement_boxes[i].classList.add("achievement-box-completed");
             achievement_box_popups[i].classList.add("achievement-box-completed");
+            achievement_boxes[i].style.backgroundImage = "url('images/achievement-" + i + ".png')";
+        } else {
+            achievement_boxes[i].classList.remove("achievement-box-completed");
+            achievement_box_popups[i].classList.remove("achievement-box-completed");
+            achievement_boxes[i].style.backgroundImage = "none";
         }
+    }
+}
+
+function u1_boost(num) {
+    return 1 + 0.2 * (2 / (1 + Math.exp(-0.2 * num)) - 1) + 0.01 * Math.pow(num, 0.5);
+}
+
+function u2_boost(num) {
+    return num === 0 ? new Decimal(1) : game.le.pow(0.01 + 0.005 * Math.pow(num, 0.25)).mul(0.2 * num).add(1);
+}
+
+function get_upgrade_desc(id) {
+    switch (id) {
+        case 0:
+            return "Life Crystals are multiplied by x" + u1_boost(game.upgrades[0].num).toFixed(3) + " -> <span style='color:#60ff60;'>x" + u1_boost(game.upgrades[0].num+1).toFixed(3) + "</span> for each one purchased";
+        case 1:
+            return "Life Crystals are boosted based on current Life Essence <br>x" + F(u2_boost(game.upgrades[1].num), 3, 3) + " -> <span style='color:#60ff60;'>x" + F(u2_boost(game.upgrades[1].num+1), 3, 3) + "</span>"
     }
 }
 
@@ -463,14 +604,14 @@ function toggle_classList(class_name, cond_function, c1, c2="") {
 
     for (let i = 0; i < elements.length; i++) {
         if (L.map(cond_function)[i]) {
-            elements[i].classList.add(c1)
+            elements[i].classList.add(c1);
             if (c2) {
-                elements[i].classList.remove(c2)
+                elements[i].classList.remove(c2);
             }
         } else {
-            elements[i].classList.remove(c1)
+            elements[i].classList.remove(c1);
             if (c2) {
-                elements[i].classList.add(c2)
+                elements[i].classList.add(c2);
             }
         }
     }
@@ -479,19 +620,29 @@ function toggle_classList(class_name, cond_function, c1, c2="") {
 function life_menu_update() {
     switch (game_local.submenu) {
         case "life-crystals":
-            document.getElementById("production").style.display = "inline-block";
+            document.getElementById("production").style.display = "flex";
 
             set_class_property("lcp", i => game.lc[i].unlocked ? "flex" : "none", "style", "display");
             set_class_property("lc-info-tier", i => "T" + (i + 1) + " Life Crystal", "innerHTML");
             set_class_property("lc-info-mul", i => "x" + F(game.lc[i].mul, 3, 2), "innerHTML");
             set_class_property("lc-info-num", i => F(game.lc[i].num, 3, 0) + " (" + F(game.lc[i].num_bought, 3, 0) + ")", "innerHTML");
             set_class_property("lc-info-gain", i =>"+" + F(game.lc[i].ps, 3, 1) + "/s", "innerHTML");
-            toggle_classList("lc-buy-btn", i => game.lc[i].cost.gt(game.le), "lc-buy-btn-unaffordable")
-            set_class_property("lc-buy-btn-content", i => "Cost: " + F(game.lc[i].cost, 3, 0) + " LE", "innerHTML");
+            toggle_classList("lc-buy-btn", i => game.lc[i].cost.gt(game.le), "buy-btn-unaffordable");
             set_class_property("lc-progress", i => game.lc[i].num_bought % 5 * 20 + "%", "style", "width");
             document.getElementById("submenu-upgrades").style.display = game.upgrades_unlocked ? "inline-block" : "none";
+            document.getElementById("lc-purchase-mode-btn").innerHTML = "Purchase mode: " + (game.lc_purchase_mode === 0 ? "Buy 1" : (game.lc_purchase_mode === 1 ? "Until 5" : "Buy Max"));
+
+            set_class_property("lc-buy-btn-content", i => "Cost: " + F(game.lc[i].cost, 3, 0) + " LE", "innerHTML");
 
             break;
+        case "upgrades":
+            document.getElementById("upgrades").style.display = "flex";
+
+            set_class_property("lc-upgrade", i => game.upgrades[i].unlocked ? "flex" : "none", "style", "display");
+            toggle_classList("lc-upgrade-buy-btn", i => game.upgrades[i].cost.gt(game.le), "buy-btn-unaffordable")
+            set_class_property("lc-upgrade-buy-btn", i => "Cost: " + F(game.upgrades[i].cost, 3, 0) + " LE", "innerHTML");
+            set_class_property("lc-upgrade-name", i => lc_upgrade_names[i] + " (Lv" + game.upgrades[i].num + ")", "innerHTML");
+            set_class_property("lc-upgrade-desc", i => get_upgrade_desc(i), "innerHTML");
         default:
             break;
     }
@@ -500,7 +651,9 @@ function life_menu_update() {
 function achievements_menu_update() {
     switch (game_local.submenu) {
         case "achievements":
-            document.getElementById("achievements").style.display = "grid";
+            document.getElementById("achievements").style.display = "flex";
+            document.getElementsByClassName("achievement-info-text")[0].innerHTML = "Each achievement boosts LCs by x1.02"
+            document.getElementsByClassName("achievement-info-text")[1].innerHTML = "Current boost: x" + Math.pow(1.02, game.achievements.length).toFixed(2)
             break;
         default:
             break;
@@ -510,12 +663,14 @@ function achievements_menu_update() {
 function options_menu_update() {
     switch (game_local.submenu) {
         case "saving":
-            document.getElementById("options-saving").style.display = "inline-block";
+            document.getElementById("options-saving").style.display = "flex";
             break;
         case "visual":
             document.getElementById("options-visual").style.display = "inline-block";
 
-            document.getElementById("options-ticker-button").innerHTML = game.ticker_enabled ? "Enable news ticker" : "Disable news ticker";
+            document.getElementById("options-format-button").innerHTML = "Number format: " + game.num_format.charAt(0).toUpperCase() + game.num_format.slice(1);
+
+            document.getElementById("options-ticker-button").innerHTML = game.ticker_enabled ? "Disable news ticker" : "Enable news ticker";
             let ticker_speed_value = document.getElementById("options-ticker-speed-slider").value;
             let new_ticker_speed = Math.pow(4, 2*ticker_speed_value-1);
             game.ticker_speed = new_ticker_speed;
@@ -529,6 +684,12 @@ function statistics_menu_update() {
     switch(game_local.submenu) {
         case "statistics":
             document.getElementById("statistics").style.display = "inline-block";
+
+            const statistics_texts = document.getElementsByClassName("statistics-text");
+            
+            statistics_texts[0].innerHTML = "You have played this game for <span style='color:#ffe4c2;'>" + seconds_to_dhms((game.time - game.start_time) / 1000) + "</span> (including offline progress).";
+            statistics_texts[1].innerHTML = "You have generated <span style='color:#e4c9ff;'>" + F(game.total_le, 3) + "</span> life essence in total.";
+
             break;
         default:
             break;
@@ -536,8 +697,8 @@ function statistics_menu_update() {
 }
 
 function seconds_to_dhms(s) {
-    let d = Math.floor(s / (60 * 60 * 24))
-    s %= (60 * 60 * 24)
+    let d = Math.floor(s / (60 * 60 * 24));
+    s %= (60 * 60 * 24);
     let h = Math.floor(s / (60 * 60));
     s %= (60 * 60);
     let m = Math.floor(s / 60);
@@ -556,9 +717,8 @@ function handle_offline_progress() {
     let offline_time = Date.now() - game.time;
 
     let game_before_exit = _.cloneDeep(game);
-    console.log(JSON.stringify(game_before_exit))
 
-    let num_ticks = 1000 * Math.min(offline_time / 100000, 1);
+    let num_ticks = Math.round(1000 * Math.min(offline_time / 100000, 1));
     for (let i = 0; i < num_ticks; i++) {
         update(start + offline_time / num_ticks);
         start += offline_time / num_ticks;
@@ -567,7 +727,7 @@ function handle_offline_progress() {
     if (offline_time >= 30000 & game_before_exit.time !== 0) {
         let offline_progress_text = document.getElementsByClassName("offline-progress-text")[0];
 
-        offline_progress_text.innerHTML += "<div style='color:#efefef'>Offline time: " + seconds_to_dhms(offline_time / 1000) + "</div>";
+        offline_progress_text.innerHTML += "<div style='color:#efefef'>Offline time: " + seconds_to_dhms(offline_time / 1000) + " (" + num_ticks + " ticks)" + "</div>";
         if (game.le.gt(game_before_exit.le)) {
             offline_progress_text.innerHTML += "<div style='color:#e4c9ff;'>Life Essence increased " + F(game_before_exit.le, 3) + " -> " + F(game.le, 3) + "</div>";
         }
@@ -584,72 +744,118 @@ function update(t) {
 
     game.time = Date.now();
     
+    for (let i = 0; i < game.lc.length; i++) {
+        let lc_obj = game.lc[i];
+
+        if (lc_obj.unlocked) {
+            lc_obj.mul = Decimal.pow(game.lc_buy5mul, lc_obj.buy_boosts);  // Buy 5 boost
+            lc_obj.mul = lc_obj.mul.mul(Decimal.pow(1.02, game.achievements.length));  // Achievement boost
+
+            if (game.upgrades[0].num > 0) {
+                lc_obj.mul = lc_obj.mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought)); // LC Upgrade 1
+            }
+
+            if (game.upgrades[1].num > 0) {
+                lc_obj.mul = lc_obj.mul.mul(u2_boost(game.upgrades[1].num)); // LC Upgrade 2
+            }
+        }
+    }
+
     for (let i = 1; i < game.lc.length; i++) {
         let lc_obj = game.lc[i];
         let prev_lc_obj = game.lc[i-1];
-        
-        prev_lc_obj.ps = lc_obj.num.mul(lc_obj.mul).mul(0.2);
-        let prev_lc_gain = prev_lc_obj.ps.mul(seconds);
-        prev_lc_obj.num = prev_lc_obj.num.add(prev_lc_gain);
 
         if (prev_lc_obj.num > 0) {
             lc_obj.unlocked = true;
         }
+
+        if (lc_obj.unlocked) {
+            prev_lc_obj.ps = lc_obj.num.mul(lc_obj.mul).mul(0.2);
+            let prev_lc_gain = prev_lc_obj.ps.mul(seconds);
+            prev_lc_obj.num = prev_lc_obj.num.add(prev_lc_gain);
+        }
     }
     
-    let leps = game.lc[0].num.mul(game.lc[0].mul).mul(1);
+    let leps = game.lc[0].num.mul(game.lc[0].mul).mul(2);
     let e_gain = leps.mul(seconds);
     game.le = game.le.add(e_gain);
-
-    check_achievements();
-    
-    // Update news ticker
-
-    document.getElementsByClassName("news-ticker-container")[0].style.display = game.ticker_enabled ? "inline-block" : "none";
-
-    update_ticker();
-    
-    // Update other HTML
-
-    document.getElementById("le-num").innerHTML = F(game.le, 3);
-    document.getElementById("leps-num").innerHTML = F(leps, 3);
-    
-    if (game.lc[3].num.gte(1) && !game.upgrades_unlocked) {
-        add_popup("feature", "New feature unlocked: Upgrades")
-        game.upgrades_unlocked = true;
-    }
-
-    // Switch & update menus
-
-    const switchable_elements = document.getElementsByClassName("switchable");
-    for (let i = 0; i < switchable_elements.length; i++) {
-        switchable_elements[i].style.display = "none";
-    }
-    
-    switch (game_local.menu) {
-        case "life":
-            life_menu_update();
-            break;
-        case "achievements":
-            achievements_menu_update();
-            break;
-        case "options":
-            options_menu_update();
-            break;
-        case "statistics":
-            statistics_menu_update();
-            break;
-        default:
-            break;
-    }
-    
-    // console.log(Math.round(1/seconds))
-    // console.log(document.getElementsByClassName("lc-progress")[0].style.width)
-    // console.log(game.achievements)
+    game.total_le = game.total_le.add(e_gain);
     
     if (request_update) {
+        // Check achievements
+        check_achievements();
+
+        // Update news ticker
+        document.getElementsByClassName("news-ticker-container")[0].style.display = game.ticker_enabled ? "inline-block" : "none";
+        update_ticker();
+        
+        // Update other HTML
+        document.getElementById("le-num").innerHTML = F(game.le, 3);
+        document.getElementById("leps-num").innerHTML = F(leps, 3);
+        
+        if (game.lc[3].num.gte(1) && !game.upgrades_unlocked) {
+            add_popup("feature", "New feature unlocked: Upgrades")
+            game.upgrades_unlocked = true;
+            document.getElementById("submenu-upgrades").classList.add("new-feature");
+            game.upgrades[0].unlocked = true;
+        }
+    
+        if (game.upgrades[0].num > 0) {
+            game.upgrades[1].unlocked = true;
+        }
+    
+        let progress = 0;
+        if (!game.upgrades_unlocked) {
+            progress = Math.min(100, 100 * game.le.add(1).log10() / lc_base_costs[3].log10());
+            document.getElementById("progress-text").innerHTML = "Next feature at " + F(lc_base_costs[3], 3) + " life essence (" + progress.toFixed(1) + "%)"
+        } else {
+            progress = Math.min(100, 100 * game.le.add(1).log10() / 30);
+            document.getElementById("progress-text").innerHTML = "Next feature at " + F(new Decimal(1e30), 3) + " life essence (" + progress.toFixed(1) + "%)"
+        }
+    
+        document.getElementById("progress-bar").style.width = progress.toString() + "%"
+    
+        // Handle hotkeys
+        if (pressed_keys.hasOwnProperty("KeyM")) {
+            if (pressed_keys["KeyM"]) {
+                buy_lc_max();
+            }
+        }
+    
+        // Switch & update menus
+        const switchable_elements = document.getElementsByClassName("switchable");
+        for (let i = 0; i < switchable_elements.length; i++) {
+            switchable_elements[i].style.display = "none";
+        }
+        
+        switch (game_local.menu) {
+            case "life":
+                life_menu_update();
+                break;
+            case "achievements":
+                achievements_menu_update();
+                break;
+            case "options":
+                options_menu_update();
+                break;
+            case "statistics":
+                statistics_menu_update();
+                break;
+            default:
+                break;
+        }
+        
+        // console.log(Math.round(1/seconds))
+        // console.log(document.getElementsByClassName("lc-progress")[0].style.width)
+        // console.log(game.achievements)
+
         requestAnimationFrame(update);
     }
+}
+
+function add_listeners() {
+    window.onkeydown = function(e) {pressed_keys[e.code] = true;}
+    window.onkeyup = function(e) {pressed_keys[e.code] = false;}
 }
 
 window.onload = () => {
@@ -658,10 +864,9 @@ window.onload = () => {
     } else {
         load_save_cookie();
     }
+    add_listeners();
     setInterval(save_game, 5000);
-    setup_menu_buttons();
-    setup_lcp_elements();
-    setup_achievement_elements();
+    setup_html_elements();
     get_news_message();
     handle_offline_progress();
     start = 0;
