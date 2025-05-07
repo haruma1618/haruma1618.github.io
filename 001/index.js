@@ -63,24 +63,27 @@ const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
 const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(6e12), new Decimal(1e17), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
 const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
 
-const lc_upgrade_names = ["Crystal Synergy", "LE Synergy"]
-const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("6e9")];
-const lc_upgrade_cost_muls = [new Decimal("1e6"), new Decimal("1e8")];
-const lc_upgrade_cost_muls_quad = [new Decimal("1e2"), new Decimal("1e4")];
+const lc_upgrade_names = ["Crystal Synergy", "LE Synergy", "Tier Synergy"];
+const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("1.5e10")];
+const lc_upgrade_cost_muls = [new Decimal("2e2"), new Decimal("1e5")];
+const lc_upgrade_cost_muls_quad = [new Decimal("1e3"), new Decimal("3e4")];
+
+const lc_boost_names = ["Tier Synergy"];
+const lc_boost_costs = [new Decimal("8e12")];
 
 const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
 const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visual/Gameplay", "statistics": "Statistics"};
 const menu_colors = {"menu-life": ["#2c0045", "#7e0094"], "menu-achievements": ["#403b00", "#b5a000"], "menu-options": ["#363636", "#707070"], "menu-statistics": ["#400020", "#900048"]};
 const num_achievements = 20;
 
-const achievement_names = ["The Beginning", "f(x)=ax²+bx+c", "HL3, for real this time", "Tetrahedral Crystal", "Hexagons are the bestagons", "Infinity doesn't exist here", "Decahedral Crystal", "The Best Number", "", "", "See, this totally isn't AD"];
+const achievement_names = ["The Beginning", "f(x)=ax²+bx+c", "HL3, for real this time", "Tetrahedral Crystal", "Snowflake Crystal", "Infinity doesn't exist here", "Decahedral Crystal", "The Best Number", "", "", "See, this totally isn't AD"];
 const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal", "Buy a T3 Life Crystal", "Buy a T4 Life Crystal", "Buy a T6 Life Crystal", "Buy a T8 Life Crystal", "Buy a T10 Life Crystal", "Buy a T12 Life Crystal", "", "", "Buy 3 Life Upgrades"];
 
 const pressed_keys = {};
 let request_update = false;
 
 function setup_game() {
-    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", ticker_enabled: true, ticker_speed: 1, le: new Decimal(10), total_le: new Decimal(0), lc_buy5mul: 2, lc: [], upgrades: [], lc_purchase_mode: 0, achievements: [], upgrades_unlocked: false};
+    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", ticker_enabled: true, ticker_speed: 1, le: new Decimal(10), total_le: new Decimal(0), lc_buy5mul: 2, lc: [], upgrades: [], boosts: [], lc_purchase_mode: 0, achievements: [], upgrades_unlocked: false};
 
     for (let i = 0; i < lc_base_costs.length; i++) {
         const lc_object = {unlocked: (i === 0), num: new Decimal(0), num_bought: 0, buy_boosts: 0, ps: 0, mul: new Decimal(1), cost: lc_base_costs[i], cost_mul: lc_base_cost_muls[i]};
@@ -90,6 +93,11 @@ function setup_game() {
     for (let i = 0; i < lc_upgrade_costs.length; i++) {
         const upg_object = {unlocked: false, num: 0, cost: lc_upgrade_costs[i], cost_mul: lc_upgrade_cost_muls[i], cost_mul_quad: lc_upgrade_cost_muls_quad[i]};
         new_game.upgrades.push(upg_object);
+    }
+
+    for (let i = 0; i < lc_boost_costs.length; i++) {
+        const boost_object = {unlocked: false, cost: lc_boost_costs[i], bought: false};
+        new_game.boosts.push(boost_object);
     }
 
     for (let i in new_game) {
@@ -153,12 +161,23 @@ function setup_lc_elements() {
     }
 
     for (let i = 1; i < lc_upgrade_costs.length; i++) {
-        const lc_upgrade_clone = document.getElementsByClassName("lc-upgrade")[0].cloneNode(true);
-        document.getElementById("lc-upgrades-rep-container").appendChild(lc_upgrade_clone);
+        const lc_upgrade_clone = document.getElementsByClassName("lc-upgrade-rep")[0].cloneNode(true);
+        document.getElementById("lc-upgrade-rep-container").appendChild(lc_upgrade_clone);
+    }
+
+    for (let i = 1; i < lc_boost_costs.length; i++) {
+        const lc_boost_clone = document.getElementsByClassName("lc-boost")[0].cloneNode(true);
+        document.getElementById("lc-boost-container").appendChild(lc_boost_clone);
     }
 
     for (let i = 0; i < lc_upgrade_costs.length; i++) {
-        document.getElementsByClassName("lc-upgrade-buy-btn")[i].setAttribute("onclick", "buy_lc_upgrade(" + i + ")");
+        document.getElementsByClassName("lc-upgrade-rep")[i].classList.add("lc-upgrade-rep-" + i);
+        document.getElementsByClassName("lc-upgrade-rep-buy-btn")[i].setAttribute("onclick", "buy_lc_upgrade(" + i + ")");
+    }
+
+    for (let i = 0; i < lc_boost_costs.length; i++) {
+        document.getElementsByClassName("lc-boost")[i].classList.add("lc-boost-" + i);
+        document.getElementsByClassName("lc-boost-buy-btn")[i].setAttribute("onclick", "buy_lc_boost(" + i + ")");
     }
 }
 
@@ -338,7 +357,16 @@ function looseJsonParse(obj) {
     return Function("\"use strict\";return (" + obj + ")")();
 }
 
-function set_save(save) {
+function export_save() {
+    navigator.clipboard.writeText(encode_save(game));
+}
+
+function export_save_btn() {
+    export_save();
+    alert("Copied to clipboard!");
+}
+
+function import_save(save) {
     let decoded_save_str = atob(save);
     let new_save = looseJsonParse(decoded_save_str);
     for (let i in new_save) {
@@ -346,21 +374,10 @@ function set_save(save) {
     }
 }
 
-function copy_text_to_clipboard(text) {
-    navigator.clipboard.writeText(text).then(
-      function() {alert("Copied to clipboard!");},
-      function(err) {console.error("Async: Could not copy text: ", err); alert("Copying failed: " + err);}
-    );
-}
-
-function export_save_btn() {
-    copy_text_to_clipboard(encode_save(game));
-}
-
 function import_save_btn() {
     let save = prompt("Enter your savefile:");
     if (save != null) {
-        set_save(save);
+        import_save(save);
         add_popup("saving", "Save imported");
     }
 }
@@ -391,7 +408,7 @@ function hard_reset_btn() {
 function load_save_cookie() {
     const save_cookie_value = ('; '+document.cookie).split(`; save=`).pop().split(';')[0];
     if (save_cookie_value) {
-        set_save(save_cookie_value);
+        import_save(save_cookie_value);
     }
 }
 
@@ -497,9 +514,19 @@ function buy_lc_upgrade(id) {
     let upg_object = game.upgrades[id];
 
     if (game.le.gte(upg_object.cost)) {
+        game.le = game.le.sub(upg_object.cost);
         upg_object.num += 1;
         upg_object.cost = upg_object.cost.mul(upg_object.cost_mul);
         upg_object.cost_mul = upg_object.cost_mul.mul(upg_object.cost_mul_quad);
+    }
+}
+
+function buy_lc_boost(id) {
+    let boost_object = game.boosts[id];
+
+    if (game.le.gte(boost_object.cost) && !boost_object.bought) {
+        game.le = game.le.sub(boost_object.cost);
+        boost_object.bought = true;
     }
 }
 
@@ -568,6 +595,17 @@ function check_achievements() {
     }
 }
 
+function get_highest_lc_tier() {
+    let highest_tier = 0;
+    for (let i = 0; i < game.lc.length; i++) {
+        if (game.lc[i].num_bought > 0) {
+            highest_tier = i + 1;
+        }
+    }
+
+    return highest_tier;
+}
+
 function u1_boost(num) {
     return 1 + 0.2 * (2 / (1 + Math.exp(-0.2 * num)) - 1) + 0.01 * Math.pow(num, 0.5);
 }
@@ -576,12 +614,23 @@ function u2_boost(num) {
     return num === 0 ? new Decimal(1) : game.le.pow(0.01 + 0.005 * Math.pow(num, 0.25)).mul(0.2 * num).add(1);
 }
 
+function b1_boost() {
+    return 1 + Math.pow(2, get_highest_lc_tier() - 7);
+}
+
 function get_upgrade_desc(id) {
     switch (id) {
         case 0:
             return "Life Crystals are multiplied by x" + u1_boost(game.upgrades[0].num).toFixed(3) + " -> <span style='color:#60ff60;'>x" + u1_boost(game.upgrades[0].num+1).toFixed(3) + "</span> for each one purchased";
         case 1:
-            return "Life Crystals are boosted based on current Life Essence <br>x" + F(u2_boost(game.upgrades[1].num), 3, 3) + " -> <span style='color:#60ff60;'>x" + F(u2_boost(game.upgrades[1].num+1), 3, 3) + "</span>"
+            return "Life Crystals are boosted based on current Life Essence<br>x" + F(u2_boost(game.upgrades[1].num), 3, 3) + " -> <span style='color:#60ff60;'>x" + F(u2_boost(game.upgrades[1].num+1), 3, 3) + "</span>";
+    }
+}
+
+function get_boost_desc(id) {
+    switch (id) {
+        case 0:
+            return "Life Crystals are boosted based on highest LC tier owned<br>Currently: x" + F(b1_boost(), 3, 3) + " (T" + get_highest_lc_tier() + ")";
     }
 }
 
@@ -638,11 +687,22 @@ function life_menu_update() {
         case "upgrades":
             document.getElementById("upgrades").style.display = "flex";
 
-            set_class_property("lc-upgrade", i => game.upgrades[i].unlocked ? "flex" : "none", "style", "display");
-            toggle_classList("lc-upgrade-buy-btn", i => game.upgrades[i].cost.gt(game.le), "buy-btn-unaffordable")
-            set_class_property("lc-upgrade-buy-btn", i => "Cost: " + F(game.upgrades[i].cost, 3, 0) + " LE", "innerHTML");
-            set_class_property("lc-upgrade-name", i => lc_upgrade_names[i] + " (Lv" + game.upgrades[i].num + ")", "innerHTML");
-            set_class_property("lc-upgrade-desc", i => get_upgrade_desc(i), "innerHTML");
+            document.getElementById("lc-boosts-text").style.display = game.upgrades[1].num > 0 ? "flex" : "none";
+            document.getElementById("lc-boost-container").style.display = game.upgrades[1].num > 0 ? "flex" : "none";
+
+            set_class_property("lc-upgrade-rep", i => game.upgrades[i].unlocked ? "flex" : "none", "style", "display");
+            toggle_classList("lc-upgrade-rep-buy-btn", i => game.upgrades[i].cost.gt(game.le), "buy-btn-unaffordable");
+            set_class_property("lc-upgrade-rep-buy-btn", i => "Cost: " + F(game.upgrades[i].cost, 3, 0) + " LE", "innerHTML");
+            set_class_property("lc-upgrade-rep-name", i => lc_upgrade_names[i] + " (Lv" + game.upgrades[i].num + ")", "innerHTML");
+            set_class_property("lc-upgrade-rep-desc", i => get_upgrade_desc(i), "innerHTML");
+
+            toggle_classList("lc-boost", i => game.boosts[i].bought, "lc-boost-bought");
+            toggle_classList("lc-boost-buy-btn", i => game.boosts[i].cost.gt(game.le), "buy-btn-unaffordable");
+            set_class_property("lc-boost-buy-btn", i => game.boosts[i].bought ? "Bought (" + F(game.boosts[i].cost, 3, 0) + " LE)" : "Cost: " + F(game.boosts[i].cost, 3, 0) + " LE", "innerHTML");
+            set_class_property("lc-boost-buy-btn", i => game.boosts[i].bought ? "default" : "pointer", "style", "cursor");
+            toggle_classList("lc-boost-buy-btn", i => game.boosts[i].bought, "lc-boost-buy-btn-bought");
+            set_class_property("lc-boost-name", i => lc_boost_names[i], "innerHTML");
+            set_class_property("lc-boost-desc", i => get_boost_desc(i), "innerHTML");
         default:
             break;
     }
@@ -813,7 +873,7 @@ function update(t) {
             document.getElementById("progress-text").innerHTML = "Next feature at " + F(new Decimal(1e30), 3) + " life essence (" + progress.toFixed(1) + "%)"
         }
     
-        document.getElementById("progress-bar").style.width = progress.toString() + "%"
+        document.getElementById("progress-bar").style.width = progress.toString() + "%";
     
         // Handle hotkeys
         if (pressed_keys.hasOwnProperty("KeyM")) {

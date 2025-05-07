@@ -351,12 +351,6 @@ button:hover {
     opacity: 35%;
 }
 
-.lc-upgrades-text {
-    margin-top: 10px;
-    font-size: 20px;
-    color: #c2f7ff;
-}
-
 #upgrades {
     display: flex;
     flex-direction: column;
@@ -364,13 +358,34 @@ button:hover {
     width: 100%;
 }
 
-#lc-upgrades-rep-container {
+.lc-upgrades-text {
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+.lc-upgrades-rep-text {
+    color: #c2f7ff;
+}
+
+.lc-boosts-text {
+    color: #ffe3c2;
+}
+
+.lc-upgrade-container {
     display: flex;
     justify-content: center;
     width: 100%;
+    margin: 10px;
+}
+
+#lc-upgrade-rep-container {
     border-top: 2px solid #c2f7ff;
     border-bottom: 2px solid #c2f7ff;
-    margin: 10px;
+}
+
+#lc-boost-container {
+    border-top: 2px solid #ffe3c2;
+    border-bottom: 2px solid #ffe3c2;
 }
 
 .lc-upgrade {
@@ -381,8 +396,29 @@ button:hover {
     width: 22%;
     height: 150px;
     margin: 10px 5px 10px 5px;
+    background-color: #007888;
+}
+
+.lc-upgrade-rep {
     border: 2px solid #005060;
+}
+
+.lc-upgrade-rep-0 {
     background: repeating-linear-gradient(45deg, #007888, #007888 30px, #006878 30px, #006878 60px);
+}
+
+.lc-upgrade-rep-1 {
+    background: repeating-radial-gradient(circle, #007888, #007888 25px, #006878 25px, #006878 50px);
+}
+
+.lc-boost {
+    border: 2px solid #613000;
+    background: repeating-linear-gradient(45deg, #8a4500, #8a4500 30px, #7a4300 30px, #7a4300 60px);
+}
+
+.lc-boost-bought {
+    border: 2px solid #615100;
+    background: repeating-linear-gradient(45deg, #8a7300, #8a7300 30px, #806a00 30px, #806a00 60px);
 }
 
 .lc-upgrade-name {
@@ -401,6 +437,18 @@ button:hover {
     bottom: 8px;
     background-color: #006b6b;
     font-size: 15px;
+}
+
+.lc-upgrade-rep-buy-btn {
+    background-color: #006b6b;
+}
+
+.lc-boost-buy-btn {
+    background-color: #6b3600;
+}
+
+.lc-boost-buy-btn-bought {
+    background-color: #6b5f00;
 }
 
 #achievements {
