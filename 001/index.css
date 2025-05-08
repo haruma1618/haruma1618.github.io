@@ -89,7 +89,7 @@ button:hover {
 }
 
 .offline-progress-container {
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     position: absolute;
@@ -396,15 +396,15 @@ button:hover {
     width: 22%;
     height: 150px;
     margin: 10px 5px 10px 5px;
-    background-color: #007888;
 }
 
 .lc-upgrade-rep {
     border: 2px solid #005060;
+    background-color: #007888;
 }
 
 .lc-upgrade-rep-0 {
-    background: repeating-linear-gradient(45deg, #007888, #007888 30px, #006878 30px, #006878 60px);
+    background: repeating-linear-gradient(45deg, #007888, #007888 25px, #006878 25px, #006878 50px);
 }
 
 .lc-upgrade-rep-1 {
@@ -413,12 +413,12 @@ button:hover {
 
 .lc-boost {
     border: 2px solid #613000;
-    background: repeating-linear-gradient(45deg, #8a4500, #8a4500 30px, #7a4300 30px, #7a4300 60px);
+    background: repeating-linear-gradient(45deg, #8a4500, #8a4500 25px, #7a4300 25px, #7a4300 50px);
 }
 
 .lc-boost-bought {
     border: 2px solid #615100;
-    background: repeating-linear-gradient(45deg, #8a7300, #8a7300 30px, #806a00 30px, #806a00 60px);
+    background: repeating-linear-gradient(45deg, #8a7300, #8a7300 25px, #806a00 25px, #806a00 50px);
 }
 
 .lc-upgrade-name {
@@ -549,9 +549,10 @@ button:hover {
     flex-direction: column;
     align-items: center;
     margin-top: 10px;
+    width: 80%;
 }
 
-#options-buttons {
+.options-buttons {
     margin-top: 10px;
 }
 

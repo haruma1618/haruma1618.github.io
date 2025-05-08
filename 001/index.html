@@ -97,8 +97,8 @@
                 </div>
 
                 <div class="switchable options-container" id="options-saving">
-                    <div id="options-text">Game autosaves every 5 seconds</div>
-                    <div id="options-buttons">
+                    <div class="options-text">Game autosaves every 5 seconds</div>
+                    <div class="options-buttons">
                         <button class="options-button" id="options-save-button" onClick="save_game_btn()">Save</button>
                         <button class="options-button" id="options-export-save-button" onClick="export_save_btn()">Export save</button>
                         <button class="options-button" id="options-import-save-button" onClick="import_save_btn()">Import save</button>
@@ -107,6 +107,7 @@
                 </div>
 
                 <div class="switchable options-container" id="options-visual">
+                    <button class="options-button" id="options-progress-button" onClick="toggle_offline_progress()"></button>
                     <button class="options-button" id="options-format-button" onClick="num_format_btn()"></button>
                     <button class="options-button" id="options-ticker-button" onClick="toggle_ticker_btn()"></button>
                     <div class="options-button" id="options-ticker-speed-container">
@@ -132,7 +133,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script> 
     <script src="https://cdn.rawgit.com/erosson/swarm-numberformat/v0.4.0/dist/swarm-numberformat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
     <script src="index.js"></script>

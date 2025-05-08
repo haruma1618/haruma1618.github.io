@@ -60,16 +60,16 @@ const ticker_messages = {
 const game = {};
 const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
 
-const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(6e12), new Decimal(1e17), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
+const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1.5e14), new Decimal(1e20), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
 const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
 
-const lc_upgrade_names = ["Crystal Synergy", "LE Synergy", "Tier Synergy"];
+const lc_upgrade_names = ["Crystal Synergy", "LE Synergy"];
 const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("1.5e10")];
 const lc_upgrade_cost_muls = [new Decimal("2e2"), new Decimal("1e5")];
 const lc_upgrade_cost_muls_quad = [new Decimal("1e3"), new Decimal("3e4")];
 
-const lc_boost_names = ["Tier Synergy"];
-const lc_boost_costs = [new Decimal("8e12")];
+const lc_boost_names = ["Tier Boost", "Self-sustaining Boost"];
+const lc_boost_costs = [new Decimal("1e11"), new Decimal("1e17")];
 
 const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
 const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visual/Gameplay", "statistics": "Statistics"};
@@ -80,10 +80,11 @@ const achievement_names = ["The Beginning", "f(x)=ax²+bx+c", "HL3, for real thi
 const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal", "Buy a T3 Life Crystal", "Buy a T4 Life Crystal", "Buy a T6 Life Crystal", "Buy a T8 Life Crystal", "Buy a T10 Life Crystal", "Buy a T12 Life Crystal", "", "", "Buy 3 Life Upgrades"];
 
 const pressed_keys = {};
+let dev_mode = true;
 let request_update = false;
 
 function setup_game() {
-    const new_game = {time: 0, start_time: Date.now(), num_format: "scientific", ticker_enabled: true, ticker_speed: 1, le: new Decimal(10), total_le: new Decimal(0), lc_buy5mul: 2, lc: [], upgrades: [], boosts: [], lc_purchase_mode: 0, achievements: [], upgrades_unlocked: false};
+    const new_game = {time: 0, start_time: Date.now(), time_mult: 1, num_format: "scientific", ticker_enabled: true, ticker_speed: 1, offline_progress: true, le: new Decimal(10), total_le: new Decimal(0), lc_buy5mul: 2, lc: [], upgrades: [], boosts: [], lc_purchase_mode: 0, achievements: [], upgrades_unlocked: false};
 
     for (let i = 0; i < lc_base_costs.length; i++) {
         const lc_object = {unlocked: (i === 0), num: new Decimal(0), num_bought: 0, buy_boosts: 0, ps: 0, mul: new Decimal(1), cost: lc_base_costs[i], cost_mul: lc_base_cost_muls[i]};
@@ -176,7 +177,6 @@ function setup_lc_elements() {
     }
 
     for (let i = 0; i < lc_boost_costs.length; i++) {
-        document.getElementsByClassName("lc-boost")[i].classList.add("lc-boost-" + i);
         document.getElementsByClassName("lc-boost-buy-btn")[i].setAttribute("onclick", "buy_lc_boost(" + i + ")");
     }
 }
@@ -368,6 +368,7 @@ function export_save_btn() {
 
 function import_save(save) {
     let decoded_save_str = atob(save);
+    setup_game();
     let new_save = looseJsonParse(decoded_save_str);
     for (let i in new_save) {
         game[i] = new_save[i];
@@ -606,6 +607,15 @@ function get_highest_lc_tier() {
     return highest_tier;
 }
 
+function get_total_lcs_purchased() {
+    let num_purchased = 0;
+    for (let i = 0; i < game.lc.length; i++) {
+        num_purchased += game.lc[i].num_bought;
+    }
+    
+    return num_purchased;
+}
+
 function u1_boost(num) {
     return 1 + 0.2 * (2 / (1 + Math.exp(-0.2 * num)) - 1) + 0.01 * Math.pow(num, 0.5);
 }
@@ -615,13 +625,17 @@ function u2_boost(num) {
 }
 
 function b1_boost() {
-    return 1 + Math.pow(2, get_highest_lc_tier() - 7);
+    return 1 + 1.6 * Math.pow(2, get_highest_lc_tier() - 7);
+}
+
+function b2_boost() {
+    return Math.pow(1.004, get_total_lcs_purchased());
 }
 
 function get_upgrade_desc(id) {
     switch (id) {
         case 0:
-            return "Life Crystals are multiplied by x" + u1_boost(game.upgrades[0].num).toFixed(3) + " -> <span style='color:#60ff60;'>x" + u1_boost(game.upgrades[0].num+1).toFixed(3) + "</span> for each one purchased";
+            return "Life Crystals are multiplied by x" + u1_boost(game.upgrades[0].num).toFixed(3) + " -> <span style='color:#60ff60;'>x" + u1_boost(game.upgrades[0].num+1).toFixed(3) + "</span> for each one purchased of that tier";
         case 1:
             return "Life Crystals are boosted based on current Life Essence<br>x" + F(u2_boost(game.upgrades[1].num), 3, 3) + " -> <span style='color:#60ff60;'>x" + F(u2_boost(game.upgrades[1].num+1), 3, 3) + "</span>";
     }
@@ -630,7 +644,9 @@ function get_upgrade_desc(id) {
 function get_boost_desc(id) {
     switch (id) {
         case 0:
-            return "Life Crystals are boosted based on highest LC tier owned<br>Currently: x" + F(b1_boost(), 3, 3) + " (T" + get_highest_lc_tier() + ")";
+            return "Life Crystals are boosted based on highest LC tier owned (1+1.6*2^(tier-7))<br>Currently: x" + F(b1_boost(), 3, 3) + " (T" + get_highest_lc_tier() + ")";
+        case 1:
+            return "Life Crystals are boosted based on total LCs purchased (1.004^purchases)<br>Currently: x" + F(b2_boost(), 3, 3) + " (" + get_total_lcs_purchased() + " purchases)";
     }
 }
 
@@ -696,8 +712,9 @@ function life_menu_update() {
             set_class_property("lc-upgrade-rep-name", i => lc_upgrade_names[i] + " (Lv" + game.upgrades[i].num + ")", "innerHTML");
             set_class_property("lc-upgrade-rep-desc", i => get_upgrade_desc(i), "innerHTML");
 
+            set_class_property("lc-boost", i => game.boosts[i].unlocked ? "flex" : "none", "style", "display");
             toggle_classList("lc-boost", i => game.boosts[i].bought, "lc-boost-bought");
-            toggle_classList("lc-boost-buy-btn", i => game.boosts[i].cost.gt(game.le), "buy-btn-unaffordable");
+            toggle_classList("lc-boost-buy-btn", i => game.boosts[i].cost.gt(game.le) && !game.boosts[i].bought, "buy-btn-unaffordable");
             set_class_property("lc-boost-buy-btn", i => game.boosts[i].bought ? "Bought (" + F(game.boosts[i].cost, 3, 0) + " LE)" : "Cost: " + F(game.boosts[i].cost, 3, 0) + " LE", "innerHTML");
             set_class_property("lc-boost-buy-btn", i => game.boosts[i].bought ? "default" : "pointer", "style", "cursor");
             toggle_classList("lc-boost-buy-btn", i => game.boosts[i].bought, "lc-boost-buy-btn-bought");
@@ -729,8 +746,8 @@ function options_menu_update() {
             document.getElementById("options-visual").style.display = "inline-block";
 
             document.getElementById("options-format-button").innerHTML = "Number format: " + game.num_format.charAt(0).toUpperCase() + game.num_format.slice(1);
-
-            document.getElementById("options-ticker-button").innerHTML = game.ticker_enabled ? "Disable news ticker" : "Enable news ticker";
+            document.getElementById("options-progress-button").innerHTML = game.offline_progress ? "Offline progress: Enabled" : "Offline progress: Disabled";
+            document.getElementById("options-ticker-button").innerHTML = game.ticker_enabled ? "News ticker: Enabled" : "News ticker: Disabled";
             let ticker_speed_value = document.getElementById("options-ticker-speed-slider").value;
             let new_ticker_speed = Math.pow(4, 2*ticker_speed_value-1);
             game.ticker_speed = new_ticker_speed;
@@ -772,11 +789,23 @@ function seconds_to_dhms(s) {
     return dhms;
 };
 
+function toggle_offline_progress() {
+    game.offline_progress = !game.offline_progress;
+}
+
 let start = 0;
 function handle_offline_progress() {
     let offline_time = Date.now() - game.time;
+    let reached_max_time = false;
+    if (offline_time > 3600000) {
+        reached_max_time = true;
+        offline_time = 3600000;
+    }
 
-    let game_before_exit = _.cloneDeep(game);
+    const game_before_exit = {};
+    for (let i in game) {
+        game_before_exit[i] = game[i]
+    }
 
     let num_ticks = Math.round(1000 * Math.min(offline_time / 100000, 1));
     for (let i = 0; i < num_ticks; i++) {
@@ -785,9 +814,10 @@ function handle_offline_progress() {
     }
 
     if (offline_time >= 30000 & game_before_exit.time !== 0) {
+        document.getElementsByClassName("offline-progress-container")[0].style.display = "flex";
         let offline_progress_text = document.getElementsByClassName("offline-progress-text")[0];
 
-        offline_progress_text.innerHTML += "<div style='color:#efefef'>Offline time: " + seconds_to_dhms(offline_time / 1000) + " (" + num_ticks + " ticks)" + "</div>";
+        offline_progress_text.innerHTML += "<div style='color:#efefef'>Offline time: " + seconds_to_dhms(offline_time / 1000) + (reached_max_time ? " (max)" : "") + " (" + num_ticks + " ticks)" + "</div>";
         if (game.le.gt(game_before_exit.le)) {
             offline_progress_text.innerHTML += "<div style='color:#e4c9ff;'>Life Essence increased " + F(game_before_exit.le, 3) + " -> " + F(game.le, 3) + "</div>";
         }
@@ -797,7 +827,7 @@ function handle_offline_progress() {
 }
 
 function update(t) {
-    const seconds = (t - start) / 1000;
+    const seconds = game.time_mult * (t - start) / 1000;
     start = t;
     
     // Math logic
@@ -811,13 +841,17 @@ function update(t) {
             lc_obj.mul = Decimal.pow(game.lc_buy5mul, lc_obj.buy_boosts);  // Buy 5 boost
             lc_obj.mul = lc_obj.mul.mul(Decimal.pow(1.02, game.achievements.length));  // Achievement boost
 
-            if (game.upgrades[0].num > 0) {
-                lc_obj.mul = lc_obj.mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought)); // LC Upgrade 1
-            }
+            // LC Upgrade 1
+            if (game.upgrades[0].num > 0) {lc_obj.mul = lc_obj.mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought));}
 
-            if (game.upgrades[1].num > 0) {
-                lc_obj.mul = lc_obj.mul.mul(u2_boost(game.upgrades[1].num)); // LC Upgrade 2
-            }
+            // LC Upgrade 2
+            if (game.upgrades[1].num > 0) {lc_obj.mul = lc_obj.mul.mul(u2_boost(game.upgrades[1].num));} // LC Upgrade 2
+            
+            // LC Boost 1
+            if (game.boosts[0].bought) {lc_obj.mul = lc_obj.mul.mul(b1_boost());}
+
+            // LC Boost 2
+            if (game.boosts[1].bought) {lc_obj.mul = lc_obj.mul.mul(b2_boost());}
         }
     }
 
@@ -862,6 +896,14 @@ function update(t) {
     
         if (game.upgrades[0].num > 0) {
             game.upgrades[1].unlocked = true;
+        }
+
+        if (game.upgrades[1].num > 0) {
+            game.boosts[0].unlocked = true;
+        }
+
+        if (game.boosts[0].bought) {
+            game.boosts[1].unlocked = true;
         }
     
         let progress = 0;
@@ -914,8 +956,27 @@ function update(t) {
 }
 
 function add_listeners() {
-    window.onkeydown = function(e) {pressed_keys[e.code] = true;}
-    window.onkeyup = function(e) {pressed_keys[e.code] = false;}
+    window.onkeydown = function(e) {
+        pressed_keys[e.code] = true;
+        if (e.code === "KeyH" && dev_mode) {
+            let le_exp = prompt("LE Exponent:");
+            if (le_exp != null && !isNaN(Number(le_exp))) {
+                game.le.m = 1;
+                game.le.e = Number(le_exp);
+            }
+        }
+        if (e.code === "KeyS" && dev_mode) {
+            let game_speed = prompt("Game Speed:");
+            if (game_speed != null && !isNaN(Number(game_speed))) {
+                game.time_mult = Number(game_speed);
+            }
+        }
+    }
+
+    window.onkeyup = function(e) {
+        pressed_keys[e.code] = false;
+    }
+    
 }
 
 window.onload = () => {
@@ -928,7 +989,9 @@ window.onload = () => {
     setInterval(save_game, 5000);
     setup_html_elements();
     get_news_message();
-    handle_offline_progress();
+    if (game.offline_progress) {
+        handle_offline_progress();
+    }
     start = 0;
     request_update = true;
     document.body.style.display = "flex";
