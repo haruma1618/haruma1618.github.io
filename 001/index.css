@@ -411,6 +411,10 @@ button:hover {
     background: repeating-radial-gradient(circle, #007888, #007888 25px, #006878 25px, #006878 50px);
 }
 
+.lc-upgrade-rep-2 {
+    background: repeating-linear-gradient(180deg, #007888, #007888 25px, #006878 25px, #006878 50px);
+}
+
 .lc-boost {
     border: 2px solid #613000;
     background: repeating-linear-gradient(45deg, #8a4500, #8a4500 25px, #7a4300 25px, #7a4300 50px);
@@ -612,4 +616,11 @@ button:hover {
     z-index: 0;
     text-align: center;
     padding-top: 1px;
+}
+
+.dev-tools {
+    position: absolute;
+    color: #c0c0c0;
+    right: 10px;
+    top: 45px;
 }

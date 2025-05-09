@@ -60,15 +60,15 @@ const ticker_messages = {
 const game = {};
 const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
 
-const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1.5e14), new Decimal(1e20), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
+const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1.5e14), new Decimal(1e24), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
 const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000"), new Decimal("1e1000")];
 
-const lc_upgrade_names = ["Crystal Synergy", "LE Synergy"];
-const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("1.5e10")];
-const lc_upgrade_cost_muls = [new Decimal("2e2"), new Decimal("1e5")];
-const lc_upgrade_cost_muls_quad = [new Decimal("1e3"), new Decimal("3e4")];
+const lc_upgrade_names = ["Crystal Synergy", "LE Synergy", "Price Efficiency"];
+const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("1.5e10"), new Decimal("3e19")];
+const lc_upgrade_cost_muls = [new Decimal("2e2"), new Decimal("1e5"), new Decimal("1e4")];
+const lc_upgrade_cost_muls_quad = [new Decimal("1e3"), new Decimal("3e4"), new Decimal("5e4")];
 
-const lc_boost_names = ["Tier Boost", "Self-sustaining Boost"];
+const lc_boost_names = ["Tier Boost", "Purchase Boost"];
 const lc_boost_costs = [new Decimal("1e11"), new Decimal("1e17")];
 
 const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
@@ -87,7 +87,7 @@ function setup_game() {
     const new_game = {time: 0, start_time: Date.now(), time_mult: 1, num_format: "scientific", ticker_enabled: true, ticker_speed: 1, offline_progress: true, le: new Decimal(10), total_le: new Decimal(0), lc_buy5mul: 2, lc: [], upgrades: [], boosts: [], lc_purchase_mode: 0, achievements: [], upgrades_unlocked: false};
 
     for (let i = 0; i < lc_base_costs.length; i++) {
-        const lc_object = {unlocked: (i === 0), num: new Decimal(0), num_bought: 0, buy_boosts: 0, ps: 0, mul: new Decimal(1), cost: lc_base_costs[i], cost_mul: lc_base_cost_muls[i]};
+        const lc_object = {unlocked: (i === 0), num: new Decimal(0), num_bought: 0, buy_boosts: 0, ps: 0, mul: new Decimal(1), cost: lc_base_costs[i], prev_cost: lc_base_costs[i], cost_mul: lc_base_cost_muls[i]};
         new_game.lc.push(lc_object);
     }
 
@@ -478,20 +478,20 @@ function buy_lc_max(iters=0) {
     }  
 }
 
-function buy_lc(id, purchase_mode=game.lc.purchase_mode) {
-    let lc_object = game.lc[id];
+function buy_lc(id, purchase_mode=game.lc_purchase_mode) {
+    let lc_obj = game.lc[id];
     
-    if (game.le.gte(lc_object.cost)) {
-        game.le = game.le.sub(lc_object.cost);
-        lc_object.num_bought += 1;
-        lc_object.num = lc_object.num.add(1);
+    if (game.le.gte(lc_obj.cost)) {
+        game.le = game.le.sub(lc_obj.cost);
+        lc_obj.num_bought += 1;
+        lc_obj.num = lc_obj.num.add(1);
         
         let lc_btn_element = document.getElementsByClassName("lc-buy-btn")[id];
         let lc_mul_element = document.getElementsByClassName("lc-info-mul")[id];
         
-        if (lc_object.num_bought % 5 === 0) {
-            lc_object.cost = lc_object.cost.mul(lc_object.cost_mul);
-            lc_object.buy_boosts += 1;
+        if (lc_obj.num_bought % 5 === 0) {
+            lc_obj.buy_boosts += 1;
+            lc_obj.cost = get_lc_cost(id);
             lc_btn_element.classList.add("bought-5");
             lc_mul_element.classList.add("bought-5-mul");
             setTimeout(function(){lc_btn_element.classList.remove("bought-5");}, 750);
@@ -503,6 +503,7 @@ function buy_lc(id, purchase_mode=game.lc.purchase_mode) {
         }
 
         if (purchase_mode === 2) {
+            console.log(F(game.le, 3, 3));
             buy_lc(id);
         }
 
@@ -624,6 +625,10 @@ function u2_boost(num) {
     return num === 0 ? new Decimal(1) : game.le.pow(0.01 + 0.005 * Math.pow(num, 0.25)).mul(0.2 * num).add(1);
 }
 
+function u3_boost(num) {
+    return num === 0 ? 0 : 0.075 + 0.05 * Math.pow(num - 1, 1.322);
+}
+
 function b1_boost() {
     return 1 + 1.6 * Math.pow(2, get_highest_lc_tier() - 7);
 }
@@ -632,12 +637,46 @@ function b2_boost() {
     return Math.pow(1.004, get_total_lcs_purchased());
 }
 
+function get_lc_mul(id) {
+    let lc_obj = game.lc[id];
+
+    let lc_mul = Decimal.pow(game.lc_buy5mul, lc_obj.buy_boosts);  // Buy 5 boost
+    lc_mul = lc_mul.mul(Decimal.pow(1.02, game.achievements.length));  // Achievement boost
+
+    // LC Upgrade 1
+    if (game.upgrades[0].num > 0) {lc_mul = lc_mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought));}
+
+    // LC Upgrade 2
+    if (game.upgrades[1].num > 0) {lc_mul = lc_mul.mul(u2_boost(game.upgrades[1].num));}
+    
+    // LC Boost 1
+    if (game.boosts[0].bought) {lc_mul = lc_mul.mul(b1_boost());}
+
+    // LC Boost 2
+    if (game.boosts[1].bought) {lc_mul = lc_mul.mul(b2_boost());}
+
+    return lc_mul;
+}
+
+function get_lc_cost(id) {
+    let lc_obj = game.lc[id];
+
+    let lc_cost = lc_base_costs[id].mul(Decimal.pow(lc_obj.cost_mul, lc_obj.buy_boosts)); // Buy 5 cost multiplier
+
+    // LC Upgrade 3
+    if (game.upgrades[2].num > 0) {lc_cost = lc_cost.div(Decimal.pow(lc_obj.num.add(1), u3_boost(game.upgrades[2].num)));}
+
+    return lc_cost;
+}
+
 function get_upgrade_desc(id) {
     switch (id) {
         case 0:
             return "Life Crystals are multiplied by x" + u1_boost(game.upgrades[0].num).toFixed(3) + " -> <span style='color:#60ff60;'>x" + u1_boost(game.upgrades[0].num+1).toFixed(3) + "</span> for each one purchased of that tier";
         case 1:
             return "Life Crystals are boosted based on current Life Essence<br>x" + F(u2_boost(game.upgrades[1].num), 3, 3) + " -> <span style='color:#60ff60;'>x" + F(u2_boost(game.upgrades[1].num+1), 3, 3) + "</span>";
+        case 2:
+            return "LC cost is divided based on LC amount<br>/amt^" + F(u3_boost(game.upgrades[2].num), 3, 3) + " -> <span style='color:#60ff60;'>/amt^" + F(u3_boost(game.upgrades[2].num+1), 3, 3) + "</span";
     }
 }
 
@@ -838,20 +877,8 @@ function update(t) {
         let lc_obj = game.lc[i];
 
         if (lc_obj.unlocked) {
-            lc_obj.mul = Decimal.pow(game.lc_buy5mul, lc_obj.buy_boosts);  // Buy 5 boost
-            lc_obj.mul = lc_obj.mul.mul(Decimal.pow(1.02, game.achievements.length));  // Achievement boost
-
-            // LC Upgrade 1
-            if (game.upgrades[0].num > 0) {lc_obj.mul = lc_obj.mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought));}
-
-            // LC Upgrade 2
-            if (game.upgrades[1].num > 0) {lc_obj.mul = lc_obj.mul.mul(u2_boost(game.upgrades[1].num));} // LC Upgrade 2
-            
-            // LC Boost 1
-            if (game.boosts[0].bought) {lc_obj.mul = lc_obj.mul.mul(b1_boost());}
-
-            // LC Boost 2
-            if (game.boosts[1].bought) {lc_obj.mul = lc_obj.mul.mul(b2_boost());}
+            lc_obj.cost = get_lc_cost(i);
+            lc_obj.mul = get_lc_mul(i);
         }
     }
 
@@ -905,6 +932,10 @@ function update(t) {
         if (game.boosts[0].bought) {
             game.boosts[1].unlocked = true;
         }
+
+        if (game.boosts[1].bought) {
+            game.upgrades[2].unlocked = true;
+        }
     
         let progress = 0;
         if (!game.upgrades_unlocked) {
@@ -916,6 +947,10 @@ function update(t) {
         }
     
         document.getElementById("progress-bar").style.width = progress.toString() + "%";
+
+        if (dev_mode) {
+            document.getElementsByClassName("dev-tools")[0].innerHTML = "H: Set LE amount<br>" + "S: Set game speed " + "(Currently: " + game.time_mult.toFixed(1) + ")<br>J: Adjust unbought prices";
+        }
     
         // Handle hotkeys
         if (pressed_keys.hasOwnProperty("KeyM")) {
@@ -969,6 +1004,28 @@ function add_listeners() {
             let game_speed = prompt("Game Speed:");
             if (game_speed != null && !isNaN(Number(game_speed))) {
                 game.time_mult = Number(game_speed);
+            }
+        }
+        if (e.code === "KeyJ" && dev_mode) {
+            let confirmation = confirm("Adjust all prices?");
+            if (confirmation) {
+                for (let i = 0; i < game.lc.length; i++) {
+                    if (game.lc[i].num_bought === 0) {
+                        game.lc[i].cost = lc_base_costs[i];
+                    }
+                }
+
+                for (let i = 0; i < game.upgrades.length; i++) {
+                    if (game.upgrades[i].num === 0) {
+                        game.upgrades[i].cost = lc_upgrade_costs[i];
+                    }
+                }
+
+                for (let i = 0; i < game.boosts.length; i++) {
+                    if (!game.boosts[i].bought) {
+                        game.boosts[i].cost = lc_boost_costs[i];
+                    }
+                }
             }
         }
     }
