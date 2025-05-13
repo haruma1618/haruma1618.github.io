@@ -279,12 +279,20 @@ button:hover {
     width: 80%;
 }
 
-#lc-top-btns {
+.lc-top-btns {
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
     margin: 10px;
 }
 
 .lc-top-btn {
     background-color: #5f0070;
+    font-size: 16px;
+}
+
+.lc-upgrade-top-btn {
+    background-color: #00706c;
     font-size: 16px;
 }
 
@@ -294,6 +302,10 @@ button:hover {
     align-items: center;
     height: 65px;
     width: 100%;
+}
+
+.lcp-scaled {
+    color: #ffccfb;
 }
 
 .lcp-even {
@@ -306,7 +318,7 @@ button:hover {
 
 .lc-info-1 {
     display: inline-block;
-    width: 30%;
+    width: 32%;
 }
 
 .lc-info-mul {
@@ -316,7 +328,7 @@ button:hover {
 
 .lc-info-2 {
     display: inline-block;
-    width: 35%;
+    width: 33%;
 }
 
 .lc-info-gain {
@@ -335,6 +347,10 @@ button:hover {
     font-size: 1.25vw;
     border-width: 2px;
     border-style: solid;
+}
+
+.lc-buy-btn-scaled {
+    background-color: #710068;
 }
 
 .buy-btn-unaffordable {
@@ -359,7 +375,6 @@ button:hover {
 }
 
 .lc-upgrades-text {
-    margin-top: 10px;
     font-size: 20px;
 }
 
@@ -376,6 +391,10 @@ button:hover {
     justify-content: center;
     width: 100%;
     margin: 10px;
+}
+
+.lc-upgrade-rep-name {
+    text-align: center;
 }
 
 #lc-upgrade-rep-container {
@@ -413,6 +432,10 @@ button:hover {
 
 .lc-upgrade-rep-2 {
     background: repeating-linear-gradient(180deg, #007888, #007888 25px, #006878 25px, #006878 50px);
+}
+
+.lc-upgrade-rep-3 {
+    background: repeating-radial-gradient(circle at 0% 0%, #007888, #007888 25px, #006878 25px, #006878 50px);
 }
 
 .lc-boost {
@@ -503,7 +526,7 @@ button:hover {
     transform: translate(-50%, -73px);
     width: 255px;
     height: auto;
-    padding-bottom: 30%;
+    padding-bottom: 10%;
     background-color: #666666;
     color: #ffffff;
     font-size: 18px;
@@ -543,6 +566,12 @@ button:hover {
 .achievement-name {
     font-weight: bold;
     margin: 10px;
+}
+
+.achievement-desc {
+    font-size: 16px;
+    line-height: 1.15;
+    margin: 5px;
 }
 
 .statistics-text {

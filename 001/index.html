@@ -55,9 +55,9 @@
                 </div>
 
                 <div class="switchable" id="production">
-                    <div id="lc-top-btns">
+                    <div class="lc-top-btns">
                         <button class="lc-top-btn" id="lc-purchase-mode-btn" onClick="lc_purchase_mode_btn()">Purchase mode: Buy 1</button>
-                        <button class="lc-top-btn" id="lc-max-all-btn" onClick="buy_lc_max()">Max all LCs (M)</button>
+                        <button class="lc-top-btn" id="lc-max-all-btn" onClick="buy_max()">Max all LCs (M)</button>
                     </div>
                     <div class="lcp">
                         <div class="lc-info-1">
@@ -77,6 +77,10 @@
                 </div>
 
                 <div class="switchable" id="upgrades">
+                    <div class="lc-top-btns">
+                        <button class="lc-upgrade-top-btn" id="lc-upgrade-purchase-mode-btn" onClick="lc_upgrade_purchase_mode_btn()">Purchase mode: Buy 1</button>
+                        <button class="lc-upgrade-top-btn" id="lc-upgrade-max-all-btn" onClick="buy_max()">Max all upgrades (M)</button>
+                    </div>
                     <div class="lc-upgrades-text" id="lc-upgrades-rep-text">Repeatable Upgrades</div>
                     <div class="lc-upgrade-container" id="lc-upgrade-rep-container">
                         <div class="lc-upgrade lc-upgrade-rep">
@@ -114,6 +118,7 @@
                         <div id="options-ticker-speed-text">Ticker speed: __%</div>
                         <input type="range" min="0" max="1" value="0.5" step="0.01" id="options-ticker-speed-slider"></input>
                     </div>
+                    <button class="options-button" id="options-lc-gain-display-button" onClick="lc_gain_display_btn()"></button>
                     <button class="options-button" id="options-sgd-button" onClick="sgd_btn()">Superior Graphic Design</button>
                 </div>
 
