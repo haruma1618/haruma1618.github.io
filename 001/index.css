@@ -238,6 +238,24 @@ button:hover {
     100% {background-color: #7e0094;}
 }
 
+.bought-5-scaled {
+    animation: 0.75s linear bought-5-scaled;
+}
+
+@keyframes bought-5-scaled {
+    0% {background-color: #fff94d;}
+    100% {background-color: #710068;}
+}
+
+.bought-5-superscaled {
+    animation: 0.75s linear bought-5-superscaled;
+}
+
+@keyframes bought-5-superscaled {
+    0% {background-color: #fff94d;}
+    100% {background-color: #090070;}
+}
+
 .bought-5-mul {
     animation: 0.75s linear bought-5-mul;
 }
@@ -283,10 +301,14 @@ button:hover {
     display: none;
     flex-direction: column;
     align-items: center;
-    color: #eddbff;
-    font-size: 1.39vw;
     margin-top: 5px;
     width: 80%;
+}
+
+#lcp-container {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
 .lc-top-btns {
@@ -312,10 +334,16 @@ button:hover {
     align-items: center;
     height: 65px;
     width: 100%;
+    font-size: 1.39vw;
+    color: #eddbff;
 }
 
 .lcp-scaled {
     color: #ffccfb;
+}
+
+.lcp-superscaled {
+    color: #ccceff;
 }
 
 .lcp-even {
@@ -363,9 +391,9 @@ button:hover {
     background-color: #710068;
 }
 
-.buy-btn-unaffordable {
-    color: #ffcce6;
-    cursor: default;
+.lc-buy-btn-superscaled {
+    background-color: #090070;
+    color: #e6dbff;
 }
 
 .lc-progress {
@@ -375,6 +403,12 @@ button:hover {
     height: 100%;
     background-color: #ffffff;
     opacity: 35%;
+}
+
+#lc-defect-text {
+    color: #ffbad9;
+    margin-top: 12px;
+    font-size: 1.2vw;
 }
 
 #upgrades {
@@ -456,6 +490,10 @@ button:hover {
     background: repeating-linear-gradient(135deg, #007888, #007888 25px, #006878 25px, #006878 50px);
 }
 
+.lc-upgrade-rep-5 {
+    background: repeating-linear-gradient(90deg, #007888, #007888 11.111%, #006878 11.111%, #006878 22.222%);
+}
+
 .lc-boost {
     border: 2px solid #613000;
     background: repeating-linear-gradient(45deg, #8a4500, #8a4500 25px, #7a4300 25px, #7a4300 50px);
@@ -481,6 +519,7 @@ button:hover {
     position: absolute;
     bottom: 8px;
     background-color: #006b6b;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 15px;
 }
 
@@ -494,6 +533,15 @@ button:hover {
 
 .lc-boost-buy-btn-bought {
     background-color: #6b5f00;
+}
+
+.buy-btn-unaffordable {
+    color: #ffcce6;
+    cursor: default;
+}
+
+.lc-buy-btn-superscaled.buy-btn-unaffordable {
+    color: #f2bfff;
 }
 
 #achievements {
@@ -592,8 +640,12 @@ button:hover {
     margin: 5px;
 }
 
+#statistics {
+    margin-top: 8px;
+}
+
 .statistics-text {
-    margin: 8px;
+    margin: 4px;
 }
 
 .options-container {
