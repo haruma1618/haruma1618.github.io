@@ -393,7 +393,7 @@ button:hover {
 
 .lc-buy-btn-superscaled {
     background-color: #090070;
-    color: #e6dbff;
+    color: #e7ddff;
 }
 
 .lc-progress {
@@ -461,7 +461,7 @@ button:hover {
     flex-direction: column;
     align-items: center;
     width: 22%;
-    height: 150px;
+    height: 140px;
     margin: 10px 5px 0px 5px;
 }
 
@@ -506,12 +506,12 @@ button:hover {
 
 .lc-upgrade-name {
     margin: 5px;
-    font-size: 18px;
+    font-size: 17.5px;
 }
 
 .lc-upgrade-desc {
-    margin: 5px;
-    font-size: 14px;
+    margin: 2px 5px 5px 5px;
+    font-size: 13.5px;
     text-align: center;
 }
 

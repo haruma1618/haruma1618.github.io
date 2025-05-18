@@ -60,8 +60,8 @@ const ticker_messages = {
 const game = {};
 const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
 
-const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1e14), new Decimal(2e30), new Decimal("8e63"), new Decimal("1e121"), new Decimal("1e164"), new Decimal("1e217"), new Decimal("1e270"), new Decimal("1e9999")];
-const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("4.5e20"), new Decimal("2.5e36"), new Decimal("8.5e47"), new Decimal("3.5e65"), new Decimal("5.5e86"), new Decimal("1e1000")];
+const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1e14), new Decimal(2e30), new Decimal("8e63"), new Decimal("1e121"), new Decimal("1e164"), new Decimal("1e217"), new Decimal("1e271"), new Decimal("1e492")];
+const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("4.5e20"), new Decimal("2.5e36"), new Decimal("8.5e47"), new Decimal("3.5e59"), new Decimal("5.5e75"), new Decimal("9.5e126")];
 
 const lc_upgrade_names = ["Crystal Synergy", "LE Synergy", "Price Efficiency", "Self-boosting Crystals", "High Tier Efficiency", "Power Crystals"];
 const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("2e10"), new Decimal("3e19"), new Decimal("2e29"), new Decimal("1e49"), new Decimal("3e75")];
@@ -69,8 +69,8 @@ const lc_upgrade_cost_muls = [new Decimal("2e2"), new Decimal("1e5"), new Decima
 const lc_upgrade_cost_muls_quad = [new Decimal("1e3"), new Decimal("3e4"), new Decimal("5e7"), new Decimal("7e9"), new Decimal("8e14"), new Decimal("5.5e27")];
 const lc_scaling_nums = [50, 125, 200]
 
-const lc_boost_names = ["Tier Boost", "Purchase Boost", "Multiboost 1", "Focused Boost 1", "Time Boost 1", "Multiboost 2", "Efficient Upgrades", "Focused Boost 2", "Focused Boost 3", "Focused Boost 4"];
-const lc_boost_costs = [new Decimal("1e11"), new Decimal("1e17"), new Decimal("1e21"), new Decimal("1e94"), new Decimal("1e100"), new Decimal("1e136"), new Decimal("1e151"), new Decimal("1e182"), new Decimal("1e197"), new Decimal("1e252")];
+const lc_boost_names = ["Tier Boost", "Purchase Boost", "Multiboost 1", "Focused Boost 1", "Time Boost 1", "Multiboost 2", "Upgrade Efficiency", "Focused Boost 2", "Focused Boost 3", "Focused Boost 4", "Time Boost 2", "Upgrade Hyperefficiency", "Focused Boost 5", "Crystal Repair"];
+const lc_boost_costs = [new Decimal("1e11"), new Decimal("1e17"), new Decimal("1e21"), new Decimal("1e94"), new Decimal("1e100"), new Decimal("1e136"), new Decimal("1e151"), new Decimal("1e182"), new Decimal("1e197"), new Decimal("1e252"), new Decimal("1e285"), new Decimal("1e308"), new Decimal("1e389"), new Decimal("1e422")];
 
 const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
 const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visual/Gameplay", "statistics": "Statistics"};
@@ -79,7 +79,7 @@ const num_achievements = 20;
 
 const achievement_names = ["The Beginning", "f(x)=ax²+bx+c", "HL3, for real this time", "Tetrahedral Crystal", "Hand of Crystals", "Snowflake Crystal", "Infinity doesn't exist here", "Decahedral Crystal", "The Best Number", "",
                            "See, this totally isn't AD", "Scaling already?", "I <3 Arbitrary Upgrade Names", "The Big 100", "Scaled^2", "How many of these are there?!"];
-const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal", "Buy a T3 Life Crystal", "Buy a T4 Life Crystal", "Buy a T5 Life Crystal", "Buy a T6 Life Crystal", "Buy a T8 Life Crystal", "Buy a T10 Life Crystal", "Buy a T12 Life Crystal", "",
+const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal", "Buy a T3 Life Crystal", "Buy a T4 Life Crystal", "Buy a T5 Life Crystal", "Buy a T6 Life Crystal", "Buy a T8 Life Crystal", "Buy a T10 Life Crystal", "Buy a T12 Life Crystal<br>Reward: Multiply T7+ Life Crystals by 12", "",
                                   "Buy the 2nd Life Upgrade", "Encounter LC cost scaling at " + lc_scaling_nums[0] + " purchases<br>Reward: Divide T1-5 LC costs by 2", "Buy the 4th Life Upgrade", "Have over 1e100 Life Essence", "Encounter LC superscaling at " + lc_scaling_nums[1] + " purchases", "Buy the 10th Life Boost<br>Reward: Buff achievement boost to x1.05 per achievement"];
 
 const pressed_keys = {};
@@ -742,7 +742,7 @@ function u5_boost(num) {
 }
 
 function u6_boost(num) {
-    return num === 0 ? 1 : 1.03 + 0.02 * (num - 1);
+    return num === 0 ? 1 : 1.03 + 0.02 * (num - 1) - 0.01 * Math.max(0, num - 6);
 }
 
 function b1_boost() {
@@ -758,11 +758,11 @@ function b3_boost() {
 }
 
 function b4_boost() {
-    return Decimal.pow(game.lc[6].mul, !game.boosts[8].bought ? 0.5 : (!game.boosts[9].bought ? 0.7 : 0.8));
+    return Decimal.pow(game.lc[6].mul, !game.boosts[8].bought ? 0.5 : (!game.boosts[9].bought ? 0.7 : (!game.boosts[12].bought ? 0.8 : 0.9)));
 }
 
 function b5_boost() {
-    return Math.pow(game.time_played, 0.25);
+    return Math.pow(game.time_played, !game.boosts[10].bought ? 0.25 : 0.32);
 }
 
 function b6_boost() {
@@ -774,7 +774,7 @@ function b7_boost() {
 }
 
 function b8_boost() {
-    return Decimal.pow(game.lc[7].mul, !game.boosts[8].bought ? 0.6 : (!game.boosts[9].bought ? 0.8 : 0.9));
+    return Decimal.pow(game.lc[7].mul, !game.boosts[8].bought ? 0.6 : (!game.boosts[9].bought ? 0.8 : (!game.boosts[12].bought ? 0.9 : 1)));
 }
 
 function b9_boost() {
@@ -783,6 +783,22 @@ function b9_boost() {
 
 function b10_boost() {
     return game.lc[9].mul;
+}
+
+function b11_boost() {
+    return Math.pow(game.time_played, 0.32);
+}
+
+function b12_boost() {
+    return 1 - 0.5 / (1 + Math.exp(1 / 40 * (70 - get_total_upgrades_purchased())));
+}
+
+function b13_boost() {
+    return game.lc[10].mul;
+}
+
+function b14_boost() {
+    return 1 - 0.5 / (1 + Math.exp(1 / 100 * (230 - get_total_upgrades_purchased())));
 }
 
 function get_achievement_boost() {
@@ -796,6 +812,9 @@ function get_lc_mul(id) {
 
     let lc_mul = Decimal.pow(game.lc_buy5mul, lc_obj.buy_boosts);  // Buy 5 boost
     lc_mul = lc_mul.mul(Decimal.pow(get_achievement_boost(), game.achievements.length));  // Achievement boost
+
+    // Achievement 08
+    if (game.achievements.includes(8) && id >= 6) {lc_mul = lc_mul.mul(12);}
 
     // LC Upgrade 1
     if (game.upgrades[0].num > 0) {lc_mul = lc_mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought));}
@@ -833,6 +852,12 @@ function get_lc_mul(id) {
     // LC Boost 10
     if (game.boosts[9].bought && id === 3) {lc_mul = lc_mul.mul(b10_boost());}
 
+    // LC Boost 11
+    if (game.boosts[10].bought && 6 <= id) {lc_mul = lc_mul.mul(b11_boost());}
+
+    // LC Boost 13
+    if (game.boosts[12].bought && id === 4) {lc_mul = lc_mul.mul(b13_boost());}
+
     if (id > 0) {
         let prev_lc_obj = game.lc[id - 1];
 
@@ -846,7 +871,6 @@ function get_lc_mul(id) {
     if (game.upgrades[5].num > 0) {lc_mul = lc_mul.pow(u6_boost(game.upgrades[5].num));}
 
     // Defects
-
     if (game.lc[6].num > 0 && id >= 6) {lc_mul = lc_mul.div(get_lc_defect_factor());}
 
     return lc_mul;
@@ -886,6 +910,9 @@ function get_upgrade_cost(id) {
 
     // LC Boost 7
     if (game.boosts[6].bought) {upgrade_cost = upgrade_cost.div(b7_boost());}
+
+    // LC Boost 12
+    if (game.boosts[11].bought) {upgrade_cost = upgrade_cost.pow(b12_boost());}
 
     return upgrade_cost;
 }
@@ -929,6 +956,14 @@ function get_boost_desc(id) {
             return "Buff the first two Focused Boosts by +^0.2, and T9 LC multiplier directly boosts T3 LCs<br>Currently: x" + F(b9_boost(), 3, 3);
         case 9:
             return "Buff the first two Focused Boosts by +^0.1, and T10 LC multiplier directly boosts T4 LCs<br>Currently: x" + F(b10_boost(), 3, 3);
+        case 10:
+            return "Buff Time Boost 1 to seconds^0.32, and T7+ Life Crystals are also boosted by it<br>Currently: x" + F(b11_boost(), 3, 3);
+        case 11:
+            return "Life Upgrades are cheaper based on total upgrades bought<br>Currently: ^" + F(b12_boost(), 3, 3) + " (" + get_total_upgrades_purchased() + " upgrades)";
+        case 12:
+            return "Buff the first two Focused Boosts by +^0.1, and T11 LC multiplier directly boosts T5 LCs<br>Currently: x" + F(b13_boost(), 3, 3);
+        case 13:
+            return "Defects are weaker based on total upgrades bought<br>Currently: -" + (100 - 100 * b14_boost()).toFixed(2) + "%" + " (" + get_total_upgrades_purchased() + " upgrades)";
     }
 }
 
@@ -951,6 +986,10 @@ function update_lc_boost_unlocks() {
     game.boosts[7].unlocked = (game.boosts[6].bought);
     game.boosts[8].unlocked = (game.boosts[7].bought);
     game.boosts[9].unlocked = (game.boosts[8].bought);
+    game.boosts[10].unlocked = (game.boosts[9].bought);
+    game.boosts[11].unlocked = (game.boosts[10].bought);
+    game.boosts[12].unlocked = (game.boosts[11].bought);
+    game.boosts[13].unlocked = (game.boosts[12].bought);
 }
 
 function get_lc_scaling(id) {
@@ -966,7 +1005,8 @@ function get_lc_scaling(id) {
 }
 
 function get_lc_defect_factor() {
-    return game.lc[5].num.pow(0.3);
+    // LC Boost 14 - Reduces defect effect
+    return game.lc[5].num.pow(!game.boosts[13].bought ? 0.3 : 0.3 * b14_boost());
 }
 
 function set_class_property(class_name, value_function, property, subproperty="") {
@@ -1221,12 +1261,13 @@ function update(t) {
         update_lc_boost_unlocks();
     
         let progress = 0;
-        if (!game.upgrades_unlocked) {
-            progress = Math.min(100, 100 * game.le.add(1).log10() / lc_base_costs[3].log10());
-            document.getElementById("progress-text").innerHTML = "Next feature at " + F(lc_base_costs[3], 3) + " life essence (" + progress.toFixed(1) + "%)"
-        } else {
-            progress = Math.min(100, 100 * game.le.add(1).log10() / 30);
-            document.getElementById("progress-text").innerHTML = "Next feature at " + F(new Decimal(1e30), 3) + " life essence (" + progress.toFixed(1) + "%)"
+        if (game.lc[11].num.m === 0) {
+            progress = Math.min(100, 100 * game.le.add(1).log10() / lc_base_costs[11].log10());
+            if (!game.lc[11].unlocked) {
+                document.getElementById("progress-text").innerHTML = "Next layer at ??? life essence (" + progress.toFixed(1) + "%)"
+            } else {
+                document.getElementById("progress-text").innerHTML = "Next layer  at " + F(lc_base_costs[11], 3) + " life essence (" + progress.toFixed(1) + "%)"
+            }
         }
     
         document.getElementById("progress-bar").style.width = progress.toString() + "%";
