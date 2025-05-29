@@ -1,7 +1,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
 
@@ -116,15 +116,29 @@
                 </div>
 
                 <div class="switchable options-container" id="options-visual">
-                    <button class="options-button" id="options-progress-button" onClick="toggle_offline_progress()"></button>
-                    <button class="options-button" id="options-format-button" onClick="num_format_btn()"></button>
-                    <button class="options-button" id="options-ticker-button" onClick="toggle_ticker_btn()"></button>
-                    <div class="options-button" id="options-ticker-speed-container">
-                        <div id="options-ticker-speed-text">Ticker speed: __%</div>
-                        <input type="range" min="0" max="1" value="0.5" step="0.01" id="options-ticker-speed-slider"></input>
+                    <div class="options-buttons">
+                        <button class="options-button" id="options-progress-button" onClick="toggle_offline_progress()"></button>
+                        <button class="options-button" id="options-format-button" onClick="num_format_btn()"></button>
+                        <div class="options-button" id="options-decimal-prec-container">
+                            <div class="options-button-text" id="options-decimal-prec-text">Precision: __ digits</div>
+                            <input type="range" min="0" max="4" value="2" step="1" id="options-decimal-prec-slider"></input>
+                        </div>
+                        <div class="options-button" id="options-bg-brightness-container">
+                            <div class="options-button-text" id="options-bg-brightness-text">BG brightness: __%</div>
+                            <input type="range" min="0" max="1.5" value="1" step="0.025" id="options-bg-brightness-slider"></input>
+                        </div>
+                        <div class="options-button" id="options-btn-brightness-container">
+                            <div class="options-button-text" id="options-btn-brightness-text">Button brightness: __%</div>
+                            <input type="range" min="0" max="1.25" value="1" step="0.025" id="options-btn-brightness-slider"></input>
+                        </div>
+                        <button class="options-button" id="options-ticker-button" onClick="toggle_ticker_btn()"></button>
+                        <div class="options-button" id="options-ticker-speed-container">
+                            <div id="options-ticker-speed-text">Ticker speed: __%</div>
+                            <input type="range" min="0" max="1" value="0.5" step="0.01" id="options-ticker-speed-slider"></input>
+                        </div>
+                        <button class="options-button" id="options-lc-gain-display-button" onClick="lc_gain_display_btn()"></button>
+                        <button class="options-button" id="options-sgd-button" onClick="sgd_btn()">Superior Graphic Design</button>
                     </div>
-                    <button class="options-button" id="options-lc-gain-display-button" onClick="lc_gain_display_btn()"></button>
-                    <button class="options-button" id="options-sgd-button" onClick="sgd_btn()">Superior Graphic Design</button>
                 </div>
 
                 <div id="progress-container">
@@ -134,9 +148,9 @@
             </div>
         </div>
 
-        <div class="dev-tools"></div>
+        <div id="dev-tools"></div>
 
-        <div class="popup-container"></div>
+        <div id="popup-container"></div>
 
         <div class="offline-progress-container">
             <div class="offline-progress-title">Offline Progress</div>
