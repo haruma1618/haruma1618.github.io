@@ -710,6 +710,17 @@ button:hover {
     padding-top: 1px;
 }
 
+#game-info-text {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+    color: #d0d0d0;
+}
+
+#game-info-text a {
+    color: #d0d0d0;
+}
+
 #dev-tools {
     white-space: pre-line;
     position: absolute;

@@ -6,7 +6,7 @@ const ticker_messages = {
     "n3": "Your 5 dice rolls: {0} - {1}",
     "n4": "The world population has increased by ~{0} since you first started playing this game",
     "n5": "The downwards subside disappear meme is still ENORMOUS!",
-    "n6": "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ (❛◡❛✿)",
+    "n6": "(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧",
     "n7": "◢▆▅▄▃ 溫╰(〞︶〝) ╯馨 ▃▄▅▆◣",
     "n8": "Why are people leaving food in the oven at 175C for 15 minutes when they could just leave it at 157500000C for 1 millisecond?",
     "n9": "New update drops in just 12!! hours!!!!",
@@ -49,28 +49,29 @@ const ticker_messages = {
     "n46": "The high increase grow meme is still MINUSCULE!",
     "n47": "No one: R\\{1}&nbsp; Absolutely no one: [0,∞)\\{1}",
     "n48": "An infinite number of mathematicians walk into a bar. The first orders a beer. The second disagrees with him, and cancels the first mathematician's order. The third orders a beer, and the fourth cancels the third's order. The bartender pours them all 1/2 a beer, saying, \"You guys gotta know your Cesàro summations.\"",
-    "n49": "2025 is the first square year since 1936, but you know what's even crazier? 2026 is the first year of the form n^2+1 since 1937!",
+    "n49": "2025 is the first square year since 1936, but you know what's even crazier? 2026 will be the first year of the form n^2+1 since 1937!",
     "n50": "New update releases at {0} UTC!",
     "n51": "ξ( ✿＞◡❛)▄︻▇▇〓▄︻┻┳═一",
     "n52": "The lion does WHAT to the small dog when it barks?!",
     "n53": "What the heck is base \"10\"? I only use base 1, not base 1111111111 or base 1111111111111111 like you weirdos.",
     "n54": "Fun fact: Every news message has a 1/256 chance of becoming shiny. Good luck collecting them all!",
+    "n55": "◢▆▅▄▃ 崩╰(〒 皿 〒)╯潰 ▃▄▅▇◣"
 };
 
 const game = {};
 const game_local = {menu: "life", submenu: "life-crystals", ticker_pos: 100};
 
-const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1e14), new Decimal(2e30), new Decimal("8e63"), new Decimal("1e121"), new Decimal("1e164"), new Decimal("1e217"), new Decimal("1e271"), new Decimal("1e492")];
+const lc_base_costs = [new Decimal(10), new Decimal(150), new Decimal(3e3), new Decimal(2e5), new Decimal(1e14), new Decimal(2e30), new Decimal("1e64"), new Decimal("1e121"), new Decimal("1e164"), new Decimal("1e217"), new Decimal("1e271"), new Decimal("1e492")];
 const lc_base_cost_muls = [new Decimal(500), new Decimal(4e3), new Decimal(6e4), new Decimal(1.5e6), new Decimal(7e8), new Decimal(3e12), new Decimal("4.5e20"), new Decimal("2.5e36"), new Decimal("8.5e47"), new Decimal("3.5e59"), new Decimal("5.5e75"), new Decimal("9.5e126")];
 
-const lc_upgrade_names = ["Crystal Synergy", "LE Synergy", "Price Efficiency", "Self-boosting Crystals", "High Tier Efficiency", "Power Crystals"];
-const lc_upgrade_costs = [new Decimal("5e5"), new Decimal("2e10"), new Decimal("3e19"), new Decimal("2e29"), new Decimal("1e49"), new Decimal("3e75")];
-const lc_upgrade_cost_muls = [new Decimal("2e2"), new Decimal("1e5"), new Decimal("2e4"), new Decimal("1e13"), new Decimal("6e9"), new Decimal("2e30")];
-const lc_upgrade_cost_muls_quad = [new Decimal("1e3"), new Decimal("3e4"), new Decimal("5e7"), new Decimal("7e9"), new Decimal("8e14"), new Decimal("5.5e27")];
+const lc_upgrade_names = [];
+const lc_upgrade_costs = [];
+const lc_upgrade_cost_muls = [];
+const lc_upgrade_cost_muls_quad = [];
 const lc_scaling_nums = [50, 125, 200]
 
-const lc_boost_names = ["Tier Boost", "Purchase Boost", "Multiboost 1", "Focused Boost 1", "Time Boost 1", "Multiboost 2", "Upgrade Efficiency", "Focused Boost 2", "Focused Boost 3", "Focused Boost 4", "Time Boost 2", "Upgrade Hyperefficiency", "Focused Boost 5", "Crystal Repair"];
-const lc_boost_costs = [new Decimal("1e11"), new Decimal("1e17"), new Decimal("1e21"), new Decimal("1e94"), new Decimal("1e100"), new Decimal("1e136"), new Decimal("1e151"), new Decimal("1e182"), new Decimal("1e197"), new Decimal("1e252"), new Decimal("1e285"), new Decimal("1e308"), new Decimal("1e389"), new Decimal("1e422")];
+const lc_boost_names = [];
+const lc_boost_costs = [];
 
 const menu_submenus = {"life": ["life-crystals", "upgrades"], "achievements": ["achievements"], "options": ["saving", "visual"], "statistics": ["statistics"]};
 const submenu_names = {"life-crystals": "Life Crystals", "upgrades": "Upgrades", "achievements": "Achievements", "saving": "Saving", "visual": "Visual/Gameplay", "statistics": "Statistics"};
@@ -82,6 +83,9 @@ const achievement_names = ["The Beginning", "f(x)=ax²+bx+c", "HL3, for real thi
 const achievement_descriptions = ["Buy a T1 Life Crystal", "Buy a T2 Life Crystal", "Buy a T3 Life Crystal", "Buy a T4 Life Crystal", "Buy a T5 Life Crystal", "Buy a T6 Life Crystal", "Buy a T8 Life Crystal", "Buy a T10 Life Crystal", "Buy a T12 Life Crystal<br>Reward: Multiply T10+ Life Crystals by 12", "",
                                   "Buy the 2nd Life Upgrade", "Encounter LC cost scaling at 50 purchases<br>Reward: Divide T1-5 LC costs by 2", "Buy the 4th Life Upgrade", "Have over 1e100 Life Essence", "Encounter LC cost superscaling at 125 purchases", "Buy the 10th Life Boost<br>Reward: Buff achievement boost to x1.05 per achievement"];
 
+const standard_base_suffixes = ["", "K", "M", "B", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"];
+const standard_suffixes_units = ["", "U", "D", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"];
+const standard_suffixes_tens = ["Dc", "Vg", "Tg", "Qd", "Qi", "Se", "St", "Og", "Nn"];
 
 const pressed_keys = {};
 let dev_mode = true;
@@ -265,14 +269,14 @@ function get_news_message(key=null) {
             message = message.replace("{1}", "Nothing... Better luck next time!");
         }
     } else if (key === "n4") {
-        message = message.replace("{0}", Math.floor(2.535 * (Date.now() - game.start_time) / 1000));
+        message = message.replace("{0}", Math.floor(2.535 * game.time_played));
     } else if (key === "n13") {
         message = message.replace("{0}", 2*(100_000_000+Math.floor(Math.random()*400_000_000))+1);
     } else if (key === "n24") {
         let random_unicode = String.fromCharCode.apply(null, Array.from(Array(1), () => Math.floor(Math.random()*65536)));
         message = message.replace("{0}", random_unicode);
     } else if (key === "n31") {
-        message = message.replace("{0}", (0.4753 * (Date.now() - game.start_time) / 1000000000).toFixed(5));
+        message = message.replace("{0}", (0.4753 * game.time_played / 1000000).toFixed(5));
     } else if (key === "n38") {
         let rnum = new Decimal(Math.random());
         message = message.replace("{0}", F(Decimal.pow(10, rnum.pow(-2).sub(1)).sub(1), 3, 2));
@@ -311,59 +315,42 @@ function add_commas(x) {
 }
 
 function format_standard(n, p) {
-    const standard_base_suffixes = ["", "K", "M", "B", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"];
-    const standard_suffixes_units = ["", "U", "D", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"];
-    const standard_suffixes_tens = ["Dc", "Vg", "Tg", "Qd", "Qi", "Se", "St", "Og", "Nn"];
+    if (Decimal.log10(n) >= 303) {
+        return format_scientific(n, p);
+    } else {
+        let d = new Decimal(n);
+        let num_str = (d.m * Math.pow(10, d.e % 3)).toFixed(p);
 
-    let num_str = "";
-    n = new Decimal(n);
+        if (Decimal.log10(d) < 33) {
+            let suffix_index = Math.floor(d.e / 3);
+            num_str += " " + standard_base_suffixes[suffix_index];
+        } else {
+            let suffix_index_units = Math.floor((d.e - 3) % 30 / 3);
+            let suffix_index_tens = Math.floor((d.e - 3) / 30 - 1);
+            num_str += " " + standard_suffixes_units[suffix_index_units] + standard_suffixes_tens[suffix_index_tens];
+        }
 
-    let decimal_str = (n.m * Math.pow(10, n.e % 3)).toFixed(p);
-    num_str += decimal_str;
-
-    let suffix_str = " ";
-    if (Decimal.log10(n) < 33) {
-        let suffix_index = Math.floor(n.e / 3);
-        suffix_str += standard_base_suffixes[suffix_index];
-    } else if (33 <= Decimal.log10(n) < 303) {
-        let suffix_index_units = Math.floor(n.e % 30 / 3 - 1);
-        let suffix_index_tens = Math.floor(n.e / 30 - 1);
-        suffix_str += standard_suffixes_units[suffix_index_units] + standard_suffixes_tens[suffix_index_tens];
+        return num_str;
     }
-    num_str += suffix_str;
-
-    return num_str;
 }
 
 function format_scientific(n, p) {
-    let num_str = "";
-    n = new Decimal(n);
+    let d = new Decimal(n);
 
-    let decimal_str = n.m.toFixed(p);
-    num_str += decimal_str;
-
-    let exponent_str = add_commas(n.e);
-    num_str += "e" + exponent_str;
-
-    return num_str;
+    return d.m.toFixed(p) + "e" + add_commas(d.e);
 }
 
 function format_engineering(n, p) {
-    let num_str = "";
-    n = new Decimal(n);
+    let d = new Decimal(n);
 
-    let decimal_str = (n.m * Math.pow(10, n.e % 3)).toFixed(p);
-    num_str += decimal_str;
-
-    let exponent_str = add_commas(3 * Math.floor(n.e / 3));
-    num_str += "e" + exponent_str;
-
-    return num_str;
+    return (d.m * Math.pow(10, d.e % 3)).toFixed(p) + "e" + add_commas(3 * Math.floor(d.e / 3));
 }
 
 function F(n, p, d=1) {
     if (n < 1000) {
-        return n.toFixed(d);
+        return n.toFixed(d)
+    } else if (n < 1000000) {
+        return add_commas(n.toFixed(0));
     } else {
         switch (game.num_format) {
             case "standard":
@@ -721,17 +708,20 @@ function get_achievement_condition(id) {
         case 8:
             return game.lc[11].num_bought > 0;
         case 10:
-            return game.upgrades[1].num > 0;
+            // return game.upgrades[1].num > 0;
+            return false;
         case 11:
             return highest_purchases >= lc_scaling_nums[0];
         case 12:
-            return game.upgrades[3].num > 0;
+            // return game.upgrades[3].num > 0;
+            return false;
         case 13:
             return game.le.e >= 100;
         case 14:
             return highest_purchases >= lc_scaling_nums[1];
         case 15:
-            return game.boosts[9].bought;
+            // return game.boosts[9].bought;
+            return false;
         default:
             return false;
     }
@@ -884,6 +874,7 @@ function get_lc_mul(id) {
     // Achievement 08
     if (game.achievements.includes(8) && id >= 9) {lc_mul = lc_mul.mul(12);}
 
+    /*
     // LC Upgrade 1
     if (game.upgrades[0].num > 0) {lc_mul = lc_mul.mul(Decimal.pow(u1_boost(game.upgrades[0].num), lc_obj.num_bought));}
 
@@ -925,18 +916,19 @@ function get_lc_mul(id) {
 
     // LC Boost 13
     if (game.boosts[12].bought && id === 4) {lc_mul = lc_mul.mul(b13_boost());}
+    */
 
     if (id > 0) {
         let prev_lc_obj = game.lc[id - 1];
 
         // LC Upgrade 4
-        if (game.upgrades[3].num > 0) {lc_mul = lc_mul.mul(prev_lc_obj.num.pow(u4_boost(game.upgrades[3].num)));}
+        // if (game.upgrades[3].num > 0) {lc_mul = lc_mul.mul(prev_lc_obj.num.pow(u4_boost(game.upgrades[3].num)));}
     }
 
     // Power boosts
 
     // LC Upgrade 6
-    if (game.upgrades[5].num > 0) {lc_mul = lc_mul.pow(u6_boost(game.upgrades[5].num));}
+    // if (game.upgrades[5].num > 0) {lc_mul = lc_mul.pow(u6_boost(game.upgrades[5].num));}
 
     // Defects
     if (game.lc[6].num > 0 && id >= 6) {lc_mul = lc_mul.div(get_lc_defect_factor());}
@@ -965,7 +957,7 @@ function get_lc_cost(id) {
     if (game.achievements.includes(11) && 0 <= id && id <= 4) {lc_cost = lc_cost.div(2);}
 
     // LC Upgrade 3
-    if (game.upgrades[2].num > 0) {lc_cost = lc_cost.div(Decimal.pow(lc_obj.num.add(1), u3_boost(game.upgrades[2].num)));}
+    // if (game.upgrades[2].num > 0) {lc_cost = lc_cost.div(Decimal.pow(lc_obj.num.add(1), u3_boost(game.upgrades[2].num)));}
 
     return lc_cost;
 }
@@ -977,10 +969,10 @@ function get_upgrade_cost(id) {
     let upgrade_cost = lc_upgrade_costs[id].mul(Decimal.pow(lc_upgrade_cost_muls[id], upgrade_obj.num)).mul(Decimal.pow(lc_upgrade_cost_muls_quad[id], upgrade_obj.num * (upgrade_obj.num - 1) / 2))
 
     // LC Boost 7
-    if (game.boosts[6].bought) {upgrade_cost = upgrade_cost.div(b7_boost());}
+    // if (game.boosts[6].bought) {upgrade_cost = upgrade_cost.div(b7_boost());}
 
     // LC Boost 12
-    if (game.boosts[11].bought) {upgrade_cost = upgrade_cost.pow(b12_boost());}
+    // if (game.boosts[11].bought) {upgrade_cost = upgrade_cost.pow(b12_boost());}
 
     return upgrade_cost;
 }
@@ -1036,15 +1028,16 @@ function get_boost_desc(id) {
 }
 
 function update_lc_upgrade_unlocks() {
+    /*
     game.upgrades[1].unlocked = (game.upgrades[0].num > 0);
     game.upgrades[2].unlocked = (game.boosts[1].bought);
     game.upgrades[3].unlocked = (game.upgrades[2].num > 0);
     game.upgrades[4].unlocked = (game.upgrades[3].num > 0);
-    game.upgrades[5].unlocked = (game.upgrades[4].num > 0);
+    game.upgrades[5].unlocked = (game.upgrades[4].num > 0);*/
 }
 
 function update_lc_boost_unlocks() {
-    game.boosts[0].unlocked = (game.upgrades[1].num > 0);
+    /*game.boosts[0].unlocked = (game.upgrades[1].num > 0);
     game.boosts[1].unlocked = (game.boosts[0].bought);
     game.boosts[2].unlocked = (game.boosts[1].bought);
     game.boosts[3].unlocked = (game.upgrades[4].num > 1);
@@ -1057,7 +1050,7 @@ function update_lc_boost_unlocks() {
     game.boosts[10].unlocked = (game.boosts[9].bought);
     game.boosts[11].unlocked = (game.boosts[10].bought);
     game.boosts[12].unlocked = (game.boosts[11].bought);
-    game.boosts[13].unlocked = (game.boosts[12].bought);
+    game.boosts[13].unlocked = (game.boosts[12].bought);*/
 }
 
 function get_lc_scaling(id) {
@@ -1074,7 +1067,7 @@ function get_lc_scaling(id) {
 
 function get_lc_defect_factor() {
     // LC Boost 14 - Reduces defect effect
-    return game.lc[5].num.pow(!game.boosts[13].bought ? 0.3 : 0.3 * b14_boost());
+    return game.lc[5].num.pow(0.3);
 }
 
 function set_class_property(class_name, value_function, property, subproperty="") {
