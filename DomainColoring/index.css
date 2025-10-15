@@ -16,12 +16,11 @@ html, body {
     display: flex;
     position: absolute;
     top: 10px;
-    left: 50%;
+    left: 30px;
     width: calc(100% - 60px);
-    padding: 3px 10px 3px 10px;
-    transform: translate(-50%, 0);
     font-size: 24px;
     font-family: 'Latin Modern Math', 'Times New Roman';
+    user-select: none;
 }
 
 #function-input {
