@@ -5,12 +5,13 @@ let pixelSize = 0.01;
 let graphMid = [0, 0];
 
 function getVert() {
-    return `precision highp float;
+    let vert = `#version 300 es
+    precision highp float;
 
-    attribute vec3 aPosition;
-    attribute vec2 aTexCoord;
+    in vec3 aPosition;
+    in vec2 aTexCoord;
 
-    varying vec2 vTexCoord;
+    out vec2 vTexCoord;
 
     void main() {
         vec4 positionVec4 = vec4(aPosition, 1.0);
@@ -18,98 +19,93 @@ function getVert() {
         gl_Position = positionVec4;
 
         vTexCoord = aTexCoord;
-    }`
+    }`;
+
+    return vert;
 }
 
 function getFrag(f) {
-    return `precision highp float;
+    let frag = `#version 300 es
+    precision highp float;
 
-    varying vec2 vTexCoord;
+    in vec2 vTexCoord;
+    out vec4 fragColor;
 
     uniform vec2 graphSize;
     uniform vec2 graphCenter;
 
     #define i vec2(0.0, 1.0)
-    #define e 2.71828182846
-    #define pi 3.14159265359
-
-    // These functions are missing in GLSL 1
-    float cosh (float val) {
-        float tmp = exp(val);
-        return (tmp + 1.0 / tmp) / 2.0;
-    }
-
-    float sinh(float val) {
-        float tmp = exp(val);
-        return (tmp - 1.0 / tmp) / 2.0;
-    }   
-
-    float tanh(float val) {
-        float tmp = exp(2.0*val);
-        return 1.0 - 2.0 / (tmp + 1.0);
-    }
+    #define u vec2(1.0, 0.0)
+    #define e vec2(2.71828182846, 0.0)
+    #define e_F 2.71828182846
+    #define pi vec2(3.14159265359, 0.0) 
+    #define pi_F 3.14159265359
 
     /****** Complex Function Definitions ******/
+    vec2 cx(float f) {return vec2(f, 0.0);}
+    vec2 cx(vec2 z) {return z;}
+
     vec2 cx_add(vec2 a, vec2 b) {return vec2(a.x+b.x, a.y+b.y);}
-    vec2 cx_add(vec2 a, float b) {return vec2(a.x+b, a.y);}
-    vec2 cx_add(float a, vec2 b) {return vec2(a+b.x, b.y);}
-    vec2 cx_add(float a, float b) {return vec2(a+b, 0.0);}
-
     vec2 cx_sub(vec2 a, vec2 b) {return vec2(a.x-b.x, a.y-b.y);}
-    vec2 cx_sub(vec2 a, float b) {return vec2(a.x-b, a.y);}
-    vec2 cx_sub(float a, vec2 b) {return vec2(a-b.x, -b.y);}
-    vec2 cx_sub(float a, float b) {return vec2(a-b, 0.0);}
-
     vec2 cx_mul(vec2 a, vec2 b) {return vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x);}
-    vec2 cx_mul(vec2 a, float b) {return vec2(a.x*b, a.y*b);}
-    vec2 cx_mul(float a, vec2 b) {return vec2(a*b.x, a*b.y);}
-    vec2 cx_mul(float a, float b) {return vec2(a*b, 0.0);}
-        
-    vec2 cx_div(vec2 a, vec2 b) {return vec2((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y), (a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y));}
-    vec2 cx_div(float a, vec2 b) {return vec2(a*b.x/(b.x*b.x+b.y*b.y), -a*b.y/(b.x*b.x+b.y*b.y));}
-    vec2 cx_div(vec2 a, float b) {return vec2(a.x/b, a.y/b);}
-    vec2 cx_div(float a, float b) {return vec2(a/b, 0.0);}
+    vec2 cx_div(vec2 a, vec2 b) {return vec2(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y);}
 
-    #define cx_ix(z) vec2(-z.y, z.x)
-    #define cx_mod(z) length(z)
-    #define cx_arg(z) atan(z.y, z.x)
-    #define cx_exp(z) vec2(cos(z.y), sin(z.y))*exp(z.x)
-    #define cx_log(z) vec2(log(length(z)), atan(z.y, z.x))
-    #define cx_ln(z) cx_log(z)
+    vec2 cx_ix(vec2 z) {return vec2(-z.y, z.x);}
+    vec2 cx_conj(vec2 z) {return vec2(z.x, -z.y);}
+    vec2 cx_rcp(vec2 z) {return vec2(z.x, -z.y)/(z.x*z.x+z.y*z.y);}
+    vec2 cx_abs(vec2 z) {return cx(length(z));}
+    vec2 cx_arg(vec2 z) {return cx(atan(z.y, z.x));}
+    vec2 cx_pmul(vec2 a, vec2 b) {
+        float theta = atan(a.y, a.x) + atan(b.y, b.x);
+        return length(a)*length(b)*vec2(cos(theta), sin(theta));
+    }
+    vec2 cx_exp(vec2 z) {return vec2(cos(z.y), sin(z.y))*exp(z.x);}
+    vec2 cx_log(vec2 z) {return vec2(log(length(z)), atan(z.y, z.x));}
+    vec2 cx_ln(vec2 z) {return cx_log(z);}
 
     vec2 cx_cos(vec2 z) {return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));}
     vec2 cx_sin(vec2 z) {return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));}
     vec2 cx_tan(vec2 z) {return vec2(sin(2.0*z.x), sinh(2.0*z.y)) / (cos(2.0*z.x)+cosh(2.0*z.y));}
-    vec2 cx_sec(vec2 z) {return cx_div(1.0, cx_cos(z));}
-    vec2 cx_csc(vec2 z) {return cx_div(1.0, cx_sin(z));}
-    vec2 cx_cot(vec2 z) {return cx_div(1.0, cx_tan(z));}
+    vec2 cx_sec(vec2 z) {return cx_rcp(cx_cos(z));}
+    vec2 cx_csc(vec2 z) {return cx_rcp(cx_sin(z));}
+    vec2 cx_cot(vec2 z) {return cx_rcp(cx_tan(z));}
 
     vec2 cx_pow(vec2 a, vec2 b) {return cx_exp(cx_mul(b, cx_log(a)));}
-    vec2 cx_pow(vec2 a, float b) {return pow(cx_mod(a), b) * vec2(cos(cx_arg(a) * b), sin(cx_arg(a) * b));}
-    vec2 cx_pow(float a, vec2 b) {return cx_exp(log(a) * b);}
-    vec2 cx_pow(float a, float b) {return vec2(pow(a, b), 0.0);}
-
-    vec2 cx_sqrt(vec2 z) {return cx_pow(z, 0.5);}
-    vec2 cx_arcsin(vec2 z) {return -cx_ix(cx_log(cx_add(cx_sqrt(cx_sub(1.0, cx_mul(z, z))), cx_ix(z))));}
-    vec2 cx_arccos(vec2 z) {return cx_sub(pi, 2.0 * cx_arcsin(z)) / 2.0;}
-    vec2 cx_arctan(vec2 z) {return -cx_ix(cx_log(cx_div(cx_add(1.0, cx_ix(z)), cx_sub(1.0, cx_ix(z))))) / 2.0;}
-    vec2 cx_arccsc(vec2 z) {return cx_arcsin(cx_div(1.0, z));}
-    vec2 cx_arcsec(vec2 z) {return cx_arccos(cx_div(1.0, z));}
-    vec2 cx_arccot(vec2 z) {return cx_arctan(cx_div(1.0, z));}
+    vec2 cx_sqrt(vec2 z) {return cx_pow(z, cx(0.5));}
+    vec2 cx_arcsin(vec2 z) {return -cx_ix(cx_log(cx_sqrt(u - cx_mul(z, z)) + cx_ix(z)));}
+    vec2 cx_arccos(vec2 z) {return (pi - 2.0*cx_arcsin(z)) / 2.0;}
+    vec2 cx_arctan(vec2 z) {return -cx_ix(cx_log(cx_div(u + cx_ix(z), u - cx_ix(z)))) / 2.0;}
+    vec2 cx_arccsc(vec2 z) {return cx_arcsin(cx_rcp(z));}
+    vec2 cx_arcsec(vec2 z) {return cx_arccos(cx_rcp(z));}
+    vec2 cx_arccot(vec2 z) {return cx_arctan(cx_rcp(z));}
     
     vec2 cx_cosh(vec2 z) {return cx_cos(cx_ix(z));}
     vec2 cx_sinh(vec2 z) {return -cx_ix(cx_sin(cx_ix(z)));}
     vec2 cx_tanh(vec2 z) {return -cx_ix(cx_tan(cx_ix(z)));}
-    vec2 cx_sech(vec2 z) {return cx_div(1.0, cx_cosh(z));}
-    vec2 cx_csch(vec2 z) {return cx_div(1.0, cx_sinh(z));}
-    vec2 cx_coth(vec2 z) {return cx_div(1.0, cx_tanh(z));}
+    vec2 cx_sech(vec2 z) {return cx_rcp(cx_cosh(z));}
+    vec2 cx_csch(vec2 z) {return cx_rcp(cx_sinh(z));}
+    vec2 cx_coth(vec2 z) {return cx_rcp(cx_tanh(z));}
 
-    vec2 cx_arsinh(vec2 z) {return cx_log(cx_add(z, cx_sqrt(cx_add(cx_mul(z, z), 1.0))));}
-    vec2 cx_arcosh(vec2 z) {return cx_log(cx_add(z, cx_sqrt(cx_sub(cx_mul(z, z), 1.0))));}
-    vec2 cx_artanh(vec2 z) {return cx_log(cx_div(cx_add(1.0, z), cx_sub(1.0, z))) / 2.0;}
-    vec2 cx_arcsch(vec2 z) {return cx_arsinh(cx_div(1.0, z));}
-    vec2 cx_arsech(vec2 z) {return cx_arcosh(cx_div(1.0, z));}
-    vec2 cx_arcoth(vec2 z) {return cx_artanh(cx_div(1.0, z));}
+    vec2 cx_arsinh(vec2 z) {return cx_log(z + cx_sqrt(cx_mul(z, z) + u));}
+    vec2 cx_arcosh(vec2 z) {return cx_log(z + cx_sqrt(cx_mul(z, z) - u));}
+    vec2 cx_artanh(vec2 z) {return cx_log(cx_div(u + z, u - z)) / 2.0;}
+    vec2 cx_arcsch(vec2 z) {return cx_arsinh(cx_rcp(z));}
+    vec2 cx_arsech(vec2 z) {return cx_arcosh(cx_rcp(z));}
+    vec2 cx_arcoth(vec2 z) {return cx_artanh(cx_rcp(z));}
+
+    vec2 cx_gamma_i(vec2 z) {
+        return cx_mul(cx_sqrt(cx_div(2.0*pi, z)), cx_pow((z + cx_rcp(12.0*z - cx_rcp(10.0*z)))/e_F, z));
+    }
+    vec2 cx_gamma(vec2 z) {
+        if (z.x < 0.5) {
+            return cx_div(pi, cx_mul(cx_sin(pi_F*z), cx_gamma_i(u - z)));
+        } else {
+            return cx_gamma_i(z);
+        }
+    }
+    vec2 cx_beta(vec2 z1, vec2 z2) {
+        return cx_div(cx_mul(cx_gamma(z1), cx_gamma(z2)), cx_gamma(z1 + z2));
+    }
 
     vec3 hsl2rgb(in vec3 c) {
         vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
@@ -121,9 +117,12 @@ function getFrag(f) {
     void main() {
         vec2 z = vTexCoord.xy * graphSize - graphSize/2.0 + graphCenter;
         vec2 fz = f(z);
+        fz = (fz != fz) ? vec2(1.0/0.0, 0.0) : fz;
 
-        gl_FragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(2.0*pi) + 1.0, 1.0), 1.0, 2.0*atan(length(fz))/pi)), 1.0);
-    }`
+        fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(2.0*pi_F) + 1.0, 1.0), 1.0, 2.0*atan(length(fz))/pi_F)), 1.0);
+    }`;
+
+    return frag;
 }
 
 function getExpressionInds(ind, nf) {
@@ -206,26 +205,34 @@ function changeFunc(f) {
                 nf = nf.slice(0, endPos) + ".0" + nf.slice(endPos);
                 indOffset += 2;
             }
-        }   
+        }
     }
 
-    // Check if function is constant
-    if (/^-?\d+(\.\d+)?$/.test(nf)) {
-        nf = "vec2(" + nf + ",0.0)";
-        dcShader = createShader(getVert(), getFrag(nf));
-        return;
+    // Replace num with cx(num)
+    const numberRegex = /\d+\.?\d+/g;
+    const numberMatches = nf.matchAll(numberRegex);
+    indOffset = 0;  // This time, ind goes up by 4 per replacement
+    if (numberMatches) {
+        for (let m of numberMatches) {
+            let startPos = m.index + indOffset;
+            let endPos = startPos + m[0].length;
+            if (startPos < 3 || nf.slice(startPos-3, startPos) != "cx(") {
+                nf = nf.slice(0, startPos) + "cx(" + nf.slice(startPos, endPos) + ")" + nf.slice(endPos);
+                indOffset += 4;
+            }
+        }   
     }
 
     // Replace unary subtraction operators, since they break things
     let ind = 0;
     while (ind < nf.length) {
         if (nf[ind] === "-" && (ind === 0 || nf[ind-1] === "(" || nf[ind-1] === ",")) {
-            nf = nf.slice(0, ind) + "0.0" + nf.slice(ind);
+            nf = nf.slice(0, ind) + "cx(0.0)" + nf.slice(ind);
         }
         ind++;
     }
 
-    // Turn a+b into cx_add(a, b)
+    // Turn a+b into cx_add(a, b) (This is still necessary so that order of operations is preserved)
     nf = replaceWithFuncNotation(nf, "+", "add");
 
     // Turn a-b into cx_sub(a, b)
@@ -240,9 +247,8 @@ function changeFunc(f) {
     // Turn a^b into cx_pow(a, b)
     nf = replaceWithFuncNotation(nf, "^", "pow");
 
-    // From longest to shortest (important)
     const cx_funcs = ["arcsin", "arccos", "arctan", "arccsc", "arcsec", "arccot", "arsinh", "arcosh", "artanh", "arcsch", "arsech", "arcoth",
-        "sqrt", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+        "gamma", "beta", "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
         "add", "sub", "mul", "div", "mod", "arg", "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
 
     for (let s of cx_funcs) {
@@ -258,12 +264,10 @@ function getFuncInput() {
     return document.getElementById("function-input");
 }
 
-function preload() {
-    changeFunc(func);
-}
-
 function setup() {
-    createCanvas(windowWidth, windowHeight, WEBGL);
+    changeFunc(func);
+
+    createCanvas(windowWidth, windowHeight, WEBGL2);
 
     window.addEventListener('wheel', event => {
         if (event.ctrlKey) {
