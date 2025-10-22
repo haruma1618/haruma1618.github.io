@@ -3,6 +3,8 @@ let func = "tan(z)";
 let prevFunc = func;
 let pixelSize = 0.01;
 let graphMid = [0, 0];
+let funcInput;
+let ltSensSlider;
 
 function getVert() {
     let vert = `#version 300 es
@@ -24,8 +26,8 @@ function getVert() {
     return vert;
 }
 
-function getFrag(f) {
-    let frag = `#version 300 es
+function getFrag(f, logMode) {
+    let frag = !logMode ? `#version 300 es
     precision highp float;
 
     in vec2 vTexCoord;
@@ -33,7 +35,8 @@ function getFrag(f) {
 
     uniform vec2 graphSize;
     uniform vec2 graphCenter;
-
+    uniform float ltSens;
+    
     #define i vec2(0.0, 1.0)
     #define u vec2(1.0, 0.0)
     #define e vec2(2.71828182846, 0.0)
@@ -55,10 +58,6 @@ function getFrag(f) {
     vec2 cx_rcp(vec2 z) {return vec2(z.x, -z.y)/(z.x*z.x+z.y*z.y);}
     vec2 cx_abs(vec2 z) {return cx(length(z));}
     vec2 cx_arg(vec2 z) {return cx(atan(z.y, z.x));}
-    vec2 cx_pmul(vec2 a, vec2 b) {
-        float theta = atan(a.y, a.x) + atan(b.y, b.x);
-        return length(a)*length(b)*vec2(cos(theta), sin(theta));
-    }
     vec2 cx_exp(vec2 z) {return vec2(cos(z.y), sin(z.y))*exp(z.x);}
     vec2 cx_log(vec2 z) {return vec2(log(length(z)), atan(z.y, z.x));}
     vec2 cx_ln(vec2 z) {return cx_log(z);}
@@ -119,8 +118,8 @@ function getFrag(f) {
         vec2 fz = f(z);
         fz = (fz != fz) ? vec2(1.0/0.0, 0.0) : fz;
 
-        fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(2.0*pi_F) + 1.0, 1.0), 1.0, 2.0*atan(length(fz))/pi_F)), 1.0);
-    }`;
+        fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(2.0*pi_F) + 1.0, 1.0), 1.0, 2.0*atan(pow(length(fz), pow(2.0, ltSens)))/pi_F)), 1.0);
+    }` : ``; // Add "log mode" code (Complex numbers represented as (x+yi)*e^z)
 
     return frag;
 }
@@ -257,14 +256,13 @@ function changeFunc(f) {
 
     console.log(nf);
 
-    dcShader = createShader(getVert(), getFrag(nf));
-}
-
-function getFuncInput() {
-    return document.getElementById("function-input");
+    dcShader = createShader(getVert(), getFrag(nf, false));
 }
 
 function setup() {
+    funcInput = document.querySelector("#function-input");
+    ltSensSlider = document.querySelector("#lt-sens-slider");
+
     changeFunc(func);
 
     createCanvas(windowWidth, windowHeight, WEBGL2);
@@ -275,9 +273,8 @@ function setup() {
         }
     }, {passive: false});
 
-    const funcInput = getFuncInput();
     funcInput.addEventListener("input", function() {
-        getFuncInput().style.borderColor = "black";
+        funcInput.style.borderColor = "black";
         prevFunc = func;
         func = funcInput.value;
 
@@ -291,11 +288,13 @@ function draw() {
     shader(dcShader);
     dcShader.setUniform("graphSize", [pixelSize * width, pixelSize * height]);
     dcShader.setUniform("graphCenter", graphMid);
+    dcShader.setUniform("ltSens", ltSensSlider.value);
+    document.querySelector("#lt-sens-value").innerHTML = ltSensSlider.value;
 
     try {
         plane(width, height);
     } catch (error) {
-        getFuncInput().style.borderColor = "red";
+        funcInput.style.borderColor = "red";
 
         func = prevFunc;
         changeFunc(func);
@@ -316,7 +315,7 @@ function mouseWheel(e) {
 }
 
 function mouseDragged(e) {
-    if (document.activeElement != getFuncInput()) {
+    if (![funcInput, ltSensSlider].includes(document.activeElement)) {
         graphMid[0] -= e.movementX * pixelSize;
         graphMid[1] += e.movementY * pixelSize;
     }
