@@ -5,6 +5,7 @@ let pixelSize = 0.01;
 let graphMid = [0, 0];
 let funcInput;
 let ltSensSlider;
+let zetaTerms = 50;
 
 function getVert() {
     let vert = `#version 300 es
@@ -36,6 +37,7 @@ function getFrag(f, logMode) {
     uniform vec2 graphSize;
     uniform vec2 graphCenter;
     uniform float ltSens;
+    uniform int zetaTerms;
     
     #define i vec2(0.0, 1.0)
     #define u vec2(1.0, 0.0)
@@ -72,7 +74,7 @@ function getFrag(f, logMode) {
     vec2 cx_pow(vec2 a, vec2 b) {return cx_exp(cx_mul(b, cx_log(a)));}
     vec2 cx_sqrt(vec2 z) {return cx_pow(z, cx(0.5));}
     vec2 cx_arcsin(vec2 z) {return -cx_ix(cx_log(cx_sqrt(u - cx_mul(z, z)) + cx_ix(z)));}
-    vec2 cx_arccos(vec2 z) {return (pi - 2.0*cx_arcsin(z)) / 2.0;}
+    vec2 cx_arccos(vec2 z) {return pi/2.0 - cx_arcsin(z);}
     vec2 cx_arctan(vec2 z) {return -cx_ix(cx_log(cx_div(u + cx_ix(z), u - cx_ix(z)))) / 2.0;}
     vec2 cx_arccsc(vec2 z) {return cx_arcsin(cx_rcp(z));}
     vec2 cx_arcsec(vec2 z) {return cx_arccos(cx_rcp(z));}
@@ -85,9 +87,9 @@ function getFrag(f, logMode) {
     vec2 cx_csch(vec2 z) {return cx_rcp(cx_sinh(z));}
     vec2 cx_coth(vec2 z) {return cx_rcp(cx_tanh(z));}
 
-    vec2 cx_arsinh(vec2 z) {return cx_log(z + cx_sqrt(cx_mul(z, z) + u));}
-    vec2 cx_arcosh(vec2 z) {return cx_log(z + cx_sqrt(cx_mul(z, z) - u));}
-    vec2 cx_artanh(vec2 z) {return cx_log(cx_div(u + z, u - z)) / 2.0;}
+    vec2 cx_arsinh(vec2 z) {return -cx_ix(cx_arcsin(cx_ix(z)));}
+    vec2 cx_arcosh(vec2 z) {return -cx_ix(cx_arccos(z));}
+    vec2 cx_artanh(vec2 z) {return -cx_ix(cx_arctan(cx_ix(z)));;}
     vec2 cx_arcsch(vec2 z) {return cx_arsinh(cx_rcp(z));}
     vec2 cx_arsech(vec2 z) {return cx_arcosh(cx_rcp(z));}
     vec2 cx_arcoth(vec2 z) {return cx_artanh(cx_rcp(z));}
@@ -96,19 +98,60 @@ function getFrag(f, logMode) {
         return cx_mul(cx_sqrt(cx_div(2.0*pi, z)), cx_pow((z + cx_rcp(12.0*z - cx_rcp(10.0*z)))/e_F, z));
     }
     vec2 cx_gamma(vec2 z) {
-        if (z.x < 0.5) {
-            return cx_div(pi, cx_mul(cx_sin(pi_F*z), cx_gamma_i(u - z)));
-        } else {
+        if (z.x >= 0.5) {
             return cx_gamma_i(z);
+        } else {
+            return cx_div(pi, cx_mul(cx_sin(pi_F*z), cx_gamma_i(u - z)));
         }
     }
     vec2 cx_beta(vec2 z1, vec2 z2) {
         return cx_div(cx_mul(cx_gamma(z1), cx_gamma(z2)), cx_gamma(z1 + z2));
     }
 
+    vec2 cx_zeta_i(vec2 s) {
+        vec2 v = cx_div(cx_pow(cx(float(zetaTerms) + 0.5), u-s), s-u);
+        for (int k = 1; k <= zetaTerms; k++) {
+            v += cx_pow(cx(float(k)), -s);
+        }
+        return v;
+    }
+    vec2 cx_zeta(vec2 s) {
+        if (length(s) == 0.0) {
+            return cx(-0.5);
+        } else if (s.x >= 0.5) {
+            return cx_zeta_i(s);
+        } else {
+            return cx_mul(cx_mul(cx_pow(2.0*pi, s), cx_sin(s*pi_F/2.0)), cx_mul(cx_gamma(u-s), cx_zeta_i(u-s)))/pi_F;
+        }
+    }
+
+    vec2 cx_eta(vec2 s) {return cx_mul(u - cx_pow(cx(2.0), u - s), cx_zeta(s));}
+
+    vec2 cx_digamma_i(vec2 z) {  // asymptotic expansion
+        vec2 v = cx_log(z) - cx_rcp(2.0*z) - cx_rcp(12.0*cx_mul(z, z)) + cx_rcp(120.0*cx_pow(z, cx(4.0)));
+        v += - cx_rcp(252.0*cx_pow(z, cx(6.0))) + cx_rcp(240.0*cx_pow(z, cx(8.0))) - cx_rcp(132.0*cx_pow(z, cx(10.0)));
+        return v;
+    }
+    vec2 cx_digamma(vec2 z) {
+        if (abs(z.y) > 1.0) {
+            return cx_digamma_i(z);
+        }
+        vec2 v = cx(0.0);
+        while (z.x < 3.0) {
+            v += cx_rcp(z);
+            z += cx(1.0);
+        }
+        return cx_digamma_i(z) - v;
+    }
+
     vec3 hsl2rgb(in vec3 c) {
         vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
         return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));
+    }
+
+    float ltFunc(vec2 z) {
+        float fct = pow(length(z), ltSens);
+        return 1.0 - 1.0/(1.0+fct);
     }
 
     #define f(z) ` + f + `
@@ -118,7 +161,7 @@ function getFrag(f, logMode) {
         vec2 fz = f(z);
         fz = (fz != fz) ? vec2(1.0/0.0, 0.0) : fz;
 
-        fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(2.0*pi_F) + 1.0, 1.0), 1.0, 2.0*atan(pow(length(fz), pow(2.0, ltSens)))/pi_F)), 1.0);
+        fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(2.0*pi_F) + 1.0, 1.0), 1.0, ltFunc(fz))), 1.0);
     }` : ``; // Add "log mode" code (Complex numbers represented as (x+yi)*e^z)
 
     return frag;
@@ -247,7 +290,7 @@ function changeFunc(f) {
     nf = replaceWithFuncNotation(nf, "^", "pow");
 
     const cx_funcs = ["arcsin", "arccos", "arctan", "arccsc", "arcsec", "arccot", "arsinh", "arcosh", "artanh", "arcsch", "arsech", "arcoth",
-        "gamma", "beta", "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+        "digamma", "gamma", "beta", "zeta", "eta", "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
         "add", "sub", "mul", "div", "mod", "arg", "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
 
     for (let s of cx_funcs) {
@@ -289,6 +332,8 @@ function draw() {
     dcShader.setUniform("graphSize", [pixelSize * width, pixelSize * height]);
     dcShader.setUniform("graphCenter", graphMid);
     dcShader.setUniform("ltSens", ltSensSlider.value);
+    dcShader.setUniform("zetaTerms", zetaTerms);
+
     document.querySelector("#lt-sens-value").innerHTML = ltSensSlider.value;
 
     try {
