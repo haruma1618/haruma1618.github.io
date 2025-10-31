@@ -45,6 +45,8 @@ function getFrag(f, logMode) {
     #define e_F 2.71828182846
     #define pi vec2(3.14159265359, 0.0) 
     #define pi_F 3.14159265359
+    #define cgamma vec2(0.5772156649, 0.0)
+    #define cgamma_F 0.5772156649
 
     /****** Complex Function Definitions ******/
     vec2 cx(float f) {return vec2(f, 0.0);}
@@ -55,18 +57,21 @@ function getFrag(f, logMode) {
     vec2 cx_mul(vec2 a, vec2 b) {return vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x);}
     vec2 cx_div(vec2 a, vec2 b) {return vec2(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y);}
 
+    // Other supported functions: round, floor, ceil, min, max, clamp
     vec2 cx_ix(vec2 z) {return vec2(-z.y, z.x);}
     vec2 cx_conj(vec2 z) {return vec2(z.x, -z.y);}
     vec2 cx_rcp(vec2 z) {return vec2(z.x, -z.y)/(z.x*z.x+z.y*z.y);}
     vec2 cx_abs(vec2 z) {return cx(length(z));}
+    vec2 cx_sgn(vec2 z) {return z/length(z);}
     vec2 cx_arg(vec2 z) {return cx(atan(z.y, z.x));}
+    vec2 cx_modulo(vec2 a, vec2 m) {return cx_mul(m, fract(cx_div(a, m)));}
     vec2 cx_exp(vec2 z) {return vec2(cos(z.y), sin(z.y))*exp(z.x);}
     vec2 cx_log(vec2 z) {return vec2(log(length(z)), atan(z.y, z.x));}
     vec2 cx_ln(vec2 z) {return cx_log(z);}
 
     vec2 cx_cos(vec2 z) {return vec2(cos(z.x) * cosh(z.y), -sin(z.x) * sinh(z.y));}
     vec2 cx_sin(vec2 z) {return vec2(sin(z.x) * cosh(z.y), cos(z.x) * sinh(z.y));}
-    vec2 cx_tan(vec2 z) {return vec2(sin(2.0*z.x), sinh(2.0*z.y)) / (cos(2.0*z.x)+cosh(2.0*z.y));}
+    vec2 cx_tan(vec2 z) {return abs(z.y) > 9.0 ? vec2(0.0, sign(z.y)) : vec2(sin(2.0*z.x), sinh(2.0*z.y)) / (cos(2.0*z.x)+cosh(2.0*z.y));}
     vec2 cx_sec(vec2 z) {return cx_rcp(cx_cos(z));}
     vec2 cx_csc(vec2 z) {return cx_rcp(cx_sin(z));}
     vec2 cx_cot(vec2 z) {return cx_rcp(cx_tan(z));}
@@ -100,9 +105,8 @@ function getFrag(f, logMode) {
     vec2 cx_gamma(vec2 z) {
         if (z.x >= 0.5) {
             return cx_gamma_i(z);
-        } else {
-            return cx_div(pi, cx_mul(cx_sin(pi_F*z), cx_gamma_i(u - z)));
         }
+        return cx_div(pi, cx_mul(cx_sin(pi_F*z), cx_gamma_i(u - z)));
     }
     vec2 cx_beta(vec2 z1, vec2 z2) {
         return cx_div(cx_mul(cx_gamma(z1), cx_gamma(z2)), cx_gamma(z1 + z2));
@@ -118,14 +122,15 @@ function getFrag(f, logMode) {
     vec2 cx_zeta(vec2 s) {
         if (length(s) == 0.0) {
             return cx(-0.5);
-        } else if (s.x >= 0.5) {
-            return cx_zeta_i(s);
-        } else {
-            return cx_mul(cx_mul(cx_pow(2.0*pi, s), cx_sin(s*pi_F/2.0)), cx_mul(cx_gamma(u-s), cx_zeta_i(u-s)))/pi_F;
         }
+        if (s.x >= 0.5) {
+            return cx_zeta_i(s);
+        }
+        return cx_mul(cx_mul(cx_pow(2.0*pi, s), cx_sin(s*pi_F/2.0)), cx_mul(cx_gamma(u-s), cx_zeta_i(u-s)))/pi_F;
     }
-
-    vec2 cx_eta(vec2 s) {return cx_mul(u - cx_pow(cx(2.0), u - s), cx_zeta(s));}
+    vec2 cx_eta(vec2 s) {
+        return cx_mul(u - cx_pow(cx(2.0), u - s), cx_zeta(s));
+    }
 
     vec2 cx_digamma_i(vec2 z) {  // asymptotic expansion
         vec2 v = cx_log(z) - cx_rcp(2.0*z) - cx_rcp(12.0*cx_mul(z, z)) + cx_rcp(120.0*cx_pow(z, cx(4.0)));
@@ -142,6 +147,70 @@ function getFrag(f, logMode) {
             z += cx(1.0);
         }
         return cx_digamma_i(z) - v;
+    }
+
+    vec2 cx_faddeeva_i(vec2 z) {
+        vec2 v = cx_div(vec2(-0.01734011, -0.04630644), z - vec2(2.23768773, -1.62594102));
+        v += cx_div(vec2(-0.73991781, 0.83951828), z - vec2(1.46523409, -1.7896203));
+        v += cx_div(vec2(5.84063211, 0.95360275), z - vec2(0.83925397, -1.89199521));
+        v += cx_div(vec2(-5.58337418, -11.2085505), z - vec2(0.27393622, -1.94178704));
+        v += cx_div(vec2(-0.01734011, 0.04630644), z - vec2(-2.23768773, -1.62594102));
+        v += cx_div(vec2(-0.73991781, -0.83951828), z - vec2(-1.46523409, -1.7896203));
+        v += cx_div(vec2(5.84063211, -0.95360275), z - vec2(-0.83925397, -1.89199521));
+        v += cx_div(vec2(-5.58337418, 11.2085505), z - vec2(-0.27393622, -1.94178704));
+        return v;
+    }
+    vec2 cx_faddeeva(vec2 z) {
+        vec2 v;
+        if (z.y >= 0.0) {
+            v = cx_faddeeva_i(z);
+        } else {
+            v = cx_add(cx_conj(cx_faddeeva_i(cx_conj(z))), 2.0*sqrt(pi_F)*cx_ix(cx_exp(-cx_mul(z, z))));
+        }
+        return -cx_ix(v)/sqrt(pi_F);
+    }
+
+    vec2 cx_erf(vec2 z) {
+        vec2 v = z.x >= 0.0 ? z : -z;
+        return (step(0.0, z.x)*2.0-1.0)*cx_sub(u, cx_mul(cx_faddeeva(cx_ix(v)), cx_exp(-cx_mul(v, v))));
+    }
+    vec2 cx_erfi(vec2 z) {
+        return -cx_ix(cx_erf(cx_ix(z)));
+    }
+
+    vec2 cx_lambertw(vec2 z) {
+        int iters = 0;
+        vec2 v = z.x > -1.0/e_F ? cx_div(z, z+u) : pow(e_F, -1.0/e_F)*cx_log(z);
+        vec2 nv;
+        while (iters < 20) {
+            vec2 expv = cx_exp(v);
+            vec2 v_expv = cx_mul(v, expv);
+            nv = v - cx_div(v_expv - z, v_expv + expv - cx_div(cx_mul(v + cx(2.0), v_expv - z), 2.0*v + cx(2.0)));
+            if (length(nv - v) < 1e-6) {
+                return nv;
+            }
+            v = nv;
+            iters++;
+        }
+        return v;
+    }
+    vec2 cx_W(vec2 z) {
+        return cx_lambertw(z);
+    }
+
+    vec2 cx_Ei(vec2 z) {
+        vec2 v = cgamma + cx_log(z);
+        vec2 t = z;
+        for (float k = 1.0; k <= 50.0; k++) {
+            // Ratio between term & next term = z^(n+1)/((n+1)(n+1)!) * n*n!/z^n = zn/(n+1)^2
+            float f = k/(k*k + 2.0*k + 1.0);
+            v += t;
+            t = cx_mul(t*f, z);
+        }
+        return v;
+    }
+    vec2 cx_li(vec2 z) {
+        return cx_Ei(cx_log(z));
     }
 
     vec3 hsl2rgb(in vec3 c) {
@@ -290,8 +359,10 @@ function changeFunc(f) {
     nf = replaceWithFuncNotation(nf, "^", "pow");
 
     const cx_funcs = ["arcsin", "arccos", "arctan", "arccsc", "arcsec", "arccot", "arsinh", "arcosh", "artanh", "arcsch", "arsech", "arcoth",
-        "digamma", "gamma", "beta", "zeta", "eta", "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
-        "add", "sub", "mul", "div", "mod", "arg", "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
+        "digamma", "gamma", "beta", "zeta", "eta", "faddeeva", "erf", "erfi", "lambertw", "W", "Ei", "li",
+        "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+        "add", "sub", "mul", "div", "abs", "arg", "sgn", "modulo",
+        "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
 
     for (let s of cx_funcs) {
         nf = nf.replaceAll(new RegExp("(^|[(,])(" + s + ")", "g"), "$1cx_$2");
