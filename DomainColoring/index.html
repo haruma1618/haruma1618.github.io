@@ -15,8 +15,18 @@
         </div>
     </div>
     <div id="bottom-bar">
-        <div id="lt-sens-container">
-            <span id="lt-sens-text">Lightness sensitivity:&nbsp;</span><span id="lt-sens-value">0</span><input type="range" min="0" max="1.5" step="0.01" value="1" id="lt-sens-slider">
+        <div class="slider-container" id="lt-sens-container">
+            <span id="lt-sens-text">Lightness sensitivity:&nbsp;</span><span id="lt-sens-value"></span><input type="range" min="0" max="1.5" step="0.01" value="0.5" id="lt-sens-slider">
+        </div>
+        <button id="logmode-button" onClick="logMode=!logMode; changeFunc(func)">Use LogMode:&nbsp;<span id="logmode-value"></span></button>
+        <div class="slider-container" id="hue-shift-container">
+            <span id="hue-shift-text">Hue shift:&nbsp;</span><span id="hue-shift-value"></span><input type="range" min="0" max="360" step="1" value="0" id="hue-shift-slider">
+        </div>
+        <div class="slider-container" id="hue-values-container">
+            <span id="hue-values-text"># Hue values:&nbsp;</span><span id="hue-values-value"></span><input type="range" min="0" max="64" step="1" value="0" id="hue-values-slider">
+        </div>
+        <div class="slider-container" id="lt-values-container">
+            <span id="lt-values-text"># Lightness values:&nbsp;</span><span id="lt-values-value"></span><input type="range" min="0" max="63" step="1" value="0" id="lt-values-slider">
         </div>
     </div>
 </body>

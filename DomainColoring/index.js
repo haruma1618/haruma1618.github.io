@@ -1,45 +1,38 @@
 let dcShader;
-let func = "tan(z)";
+let func = "z";
 let prevFunc = func;
 let pixelSize = 0.01;
 let graphMid = [0, 0];
 let logMode = true;
 let funcInput;
 let ltSensSlider;
+let hueShiftSlider;
+let hueValuesSlider;
+let ltValuesSlider;
+let numHueValues = 0;
+let numLtValues = 0;
 let zetaTerms = 50;
 
+let bVert = `#version 300 es
+precision highp float;
+
+in vec3 aPosition;
+in vec2 aTexCoord;
+
+out vec2 vTexCoord;
+
+void main() {
+    vec4 positionVec4 = vec4(aPosition, 1.0);
+    positionVec4.xy = positionVec4.xy * 2.0;
+    gl_Position = positionVec4;
+
+    vTexCoord = aTexCoord;
+}`;
 let bFrag;
 let bFragLog;
 
-function getVert() {
-    let vert = `#version 300 es
-    precision highp float;
-
-    in vec3 aPosition;
-    in vec2 aTexCoord;
-
-    out vec2 vTexCoord;
-
-    void main() {
-        vec4 positionVec4 = vec4(aPosition, 1.0);
-        positionVec4.xy = positionVec4.xy * 2.0;
-        gl_Position = positionVec4;
-
-        vTexCoord = aTexCoord;
-    }`;
-
-    return vert;
-}
-
 function getFrag(f, logMode) {
-    let frag; 
-    if (!logMode) {
-        frag = bFrag.replace("$$", f);
-    } else { // Log mode (Complex numbers represented as (x+yi)*e^z)
-        frag = bFragLog.replace("$$", f);
-    }
-
-    return frag;
+    return (logMode ? bFragLog : bFrag).replace("$$", f);
 }
 
 function getExpressionInds(ind, nf) {
@@ -165,7 +158,7 @@ function changeFunc(f) {
     nf = replaceWithFuncNotation(nf, "^", "pow");
 
     const cx_funcs = ["arcsin", "arccos", "arctan", "arccsc", "arcsec", "arccot", "arsinh", "arcosh", "artanh", "arcsch", "arsech", "arcoth",
-        "digamma", "gamma", "beta", "zeta", "eta", "faddeeva", "erf", "erfi", "lambertw", "W", "Ei", "li",
+        "digamma", "gamma", "beta", "zeta", "eta", "faddeeva", "erf", "erfi", "lambertw", "W", "Ei", "li", "Tetr",
         "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
         "add", "sub", "mul", "div", "abs", "arg", "sgn", "modulo",
         "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
@@ -176,15 +169,18 @@ function changeFunc(f) {
 
     console.log(nf);
 
-    dcShader = createShader(getVert(), getFrag(nf, logMode));
+    dcShader = createShader(bVert, getFrag(nf, logMode));
 }
 
 async function setup() {
     funcInput = document.querySelector("#function-input");
     ltSensSlider = document.querySelector("#lt-sens-slider");
+    hueShiftSlider = document.querySelector("#hue-shift-slider");
+    hueValuesSlider = document.querySelector("#hue-values-slider");
+    ltValuesSlider = document.querySelector("#lt-values-slider");
 
-    bFrag = (await loadStrings("frag.txt")).join("\n");
-    bFragLog = (await loadStrings("frag_log.txt")).join("\n");
+    bFrag = (await loadStrings("DcFrag.frag")).join("\n");
+    bFragLog = (await loadStrings("DcFragLog.frag")).join("\n");
 
     changeFunc(func);
 
@@ -204,17 +200,28 @@ async function setup() {
         changeFunc(func);
     });
 
-    funcInput.value = "tan(z)";
+    funcInput.value = "z";
 }
 
 function draw() {  
     shader(dcShader);
+    numHueValues = hueValuesSlider.value == 0 ? 0 : parseInt(hueValuesSlider.max) + 1 - hueValuesSlider.value;
+    numLtValues = ltValuesSlider.value == 0 ? 0 : parseInt(ltValuesSlider.max) + 1 - ltValuesSlider.value;
+
     dcShader.setUniform("graphSize", [pixelSize * width, pixelSize * height]);
     dcShader.setUniform("graphCenter", graphMid);
+    dcShader.setUniform("hueShift", hueShiftSlider.value);
     dcShader.setUniform("ltSens", ltSensSlider.value);
+    dcShader.setUniform("numHueValues", numHueValues);
+    dcShader.setUniform("numLightnessValues", numLtValues);
     dcShader.setUniform("zetaTerms", zetaTerms);
 
     document.querySelector("#lt-sens-value").innerHTML = ltSensSlider.value;
+    document.querySelector("#hue-shift-value").innerHTML = hueShiftSlider.value + "°";
+    document.querySelector("#hue-values-value").innerHTML = numHueValues == 0 ? "∞" : numHueValues;
+    document.querySelector("#lt-values-value").innerHTML = numLtValues == 0 ? "∞" : numLtValues + 1;
+    document.querySelector("#logmode-button").style.backgroundColor = logMode ? "#ddffff" : "#ffdddd";
+    document.querySelector("#logmode-value").innerHTML = logMode;
 
     try {
         plane(width, height);
@@ -240,7 +247,7 @@ function mouseWheel(e) {
 }
 
 function mouseDragged(e) {
-    if (![funcInput, ltSensSlider].includes(document.activeElement)) {
+    if (![funcInput, ltSensSlider, hueShiftSlider, hueValuesSlider, ltValuesSlider].includes(document.activeElement)) {
         graphMid[0] -= e.movementX * pixelSize;
         graphMid[1] += e.movementY * pixelSize;
     }

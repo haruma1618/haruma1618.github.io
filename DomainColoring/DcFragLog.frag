@@ -6,7 +6,10 @@ out vec4 fragColor;
 
 uniform vec2 graphSize;
 uniform vec2 graphCenter;
+uniform float hueShift;
 uniform float ltSens;
+uniform int numHueValues;
+uniform int numLightnessValues;
 uniform int zetaTerms;
 
 #define u vec3(1.0, 0.0, 0.0)
@@ -22,7 +25,6 @@ uniform int zetaTerms;
 
 /****** Complex Function Definitions ******/
 vec3 cx(float f) {return vec3(f, 0.0, 0.0);}
-vec3 cx_norm(vec3 z) {float l = length(z.xy); return vec3(z.xy/l, z.z + log(l));}
 vec3 cx_neg(vec3 z) {return vec3(-z.x, -z.y, z.z);}
 
 vec3 cx_add(vec3 a, vec3 b) {
@@ -40,7 +42,7 @@ vec3 cx_ix(vec3 z) {return vec3(-z.y, z.x, z.z);}
 vec3 cx_nix(vec3 z) {return vec3(z.y, -z.x, z.z);}
 vec3 cx_conj(vec3 z) {return vec3(z.x, -z.y, z.z);}
 vec3 cx_rcp(vec3 z) {return vec3(vec2(z.x, -z.y)/(z.x*z.x+z.y*z.y), -z.z);}
-vec3 cx_sgn(vec3 z) {return z/(length(z.xy)*exp(z.z));}
+vec3 cx_sgn(vec3 z) {return cx_smul(z, 1.0/(length(z.xy)*exp(z.z)));}
 vec3 cx_exp(vec3 z) {float theta = mod(z.y*exp(z.z), tau_F); return vec3(cos(theta), sin(theta), z.x*exp(z.z));}
 vec3 cx_log(vec3 z) {return vec3(log(length(z.xy))+z.z, atan(z.y, z.x), 0.0);}
 vec3 cx_ln(vec3 z) {return cx_log(z);}
@@ -119,11 +121,14 @@ vec3 cx_digamma_i(vec3 z) {  // asymptotic expansion
     return v;
 }
 vec3 cx_digamma(vec3 z) {
-    if (abs(z.y)*exp(z.z) > 1.0) {
+    if (abs(z.y)*exp(z.z) > 2.0) {
         return cx_digamma_i(z);
     }
+    if (z.x*exp(z.z) < -5.0) {
+        return cx_digamma_i(cx_sub(u, z)) - cx_smul(cx_cot(cx_smul(z, pi_F)), pi_F);
+    }
     vec3 v = cx(0.0);
-    while (z.x*exp(z.z) < 3.0) {
+    while (z.x*exp(z.z) < 6.0) {
         v = cx_add(v, cx_rcp(z));
         z = cx_add(z, cx(1.0));
     }
@@ -131,28 +136,30 @@ vec3 cx_digamma(vec3 z) {
 }
 
 vec3 cx_faddeeva_i(vec3 z) {
-    vec3 v = cx_div(vec3(-0.01734011, -0.04630644, 0.0), cx_sub(z, vec3(2.23768773, -1.62594102, 0.0)));
-    v = cx_add(v, cx_div(vec3(-0.73991781, 0.83951828, 0.0), cx_sub(z, vec3(1.46523409, -1.7896203, 0.0))));
-    v = cx_add(v, cx_div(vec3(5.84063211, 0.95360275, 0.0), cx_sub(z, vec3(0.83925397, -1.89199521, 0.0))));
-    v = cx_add(v, cx_div(vec3(-5.58337418, -11.2085505, 0.0), cx_sub(z, vec3(0.27393622, -1.94178704, 0.0))));
-    v = cx_add(v, cx_div(vec3(-0.01734011, 0.04630644, 0.0), cx_sub(z, vec3(-2.23768773, -1.62594102, 0.0))));
-    v = cx_add(v, cx_div(vec3(-0.73991781, -0.83951828, 0.0), cx_sub(z, vec3(-1.46523409, -1.7896203, 0.0))));
-    v = cx_add(v, cx_div(vec3(5.84063211, -0.95360275, 0.0), cx_sub(z, vec3(-0.83925397, -1.89199521, 0.0))));
-    v = cx_add(v, cx_div(vec3(-5.58337418, 11.2085505, 0.0), cx_sub(z, vec3(-0.27393622, -1.94178704, 0.0))));
+    vec3 fa[4] = vec3[](vec3(-0.01734011, -0.04630644, 0.0), vec3(-0.73991781, 0.83951828, 0.0), vec3(5.84063211, 0.95360275, 0.0), vec3(-5.58337418, -11.2085505, 0.0));
+    vec3 fb[4] = vec3[](vec3(2.23768773, -1.62594102, 0.0), vec3(1.46523409, -1.7896203, 0.0), vec3(0.83925397, -1.89199521, 0.0), vec3(0.27393622, -1.94178704, 0.0));
+    vec3 v = cx(0.0);
+    for (int j = 0; j < 4; j++) {
+        v = cx_add(v, cx_div(fa[j], cx_sub(z, fb[j])));
+        v = cx_add(v, cx_div(cx_conj(fa[j]), cx_sub(z, cx_neg(cx_conj(fb[j])))));
+    }
+
     return v;
 }
+vec3 cx_faddeeva_p(vec3 z) {
+    return cx_smul(cx_nix(cx_faddeeva_i(z)), 1.0/sqrt(pi_F));
+}
 vec3 cx_faddeeva(vec3 z) {
-    vec3 v;
     if (z.y >= 0.0) {
-        v = cx_faddeeva_i(z);
-    } else {
-        v = cx_add(cx_conj(cx_faddeeva_i(cx_conj(z))), cx_smul(cx_ix(cx_exp(cx_neg(cx_mul(z, z)))), 2.0*sqrt(pi_F)));
+        return cx_faddeeva_p(z);
     }
+    vec3 v = cx_add(cx_conj(cx_faddeeva_i(cx_conj(z))), cx_smul(cx_ix(cx_exp(cx_neg(cx_mul(z, z)))), 2.0*sqrt(pi_F)));
     return cx_smul(cx_nix(v), 1.0/sqrt(pi_F));
 }
 
 vec3 cx_erf(vec3 z) {
-    return cx_sub(u, cx_mul(cx_faddeeva(cx_ix(z)), cx_exp(cx_neg(cx_mul(z, z)))));
+    vec3 v = z.x >= 0.0 ? z : cx_neg(z);
+    return cx_smul(cx_sub(u, cx_mul(cx_faddeeva_p(cx_ix(v)), cx_exp(cx_neg(cx_mul(v, v))))), step(0.0, z.x)*2.0-1.0);
 }
 vec3 cx_erfi(vec3 z) {
     return cx_nix(cx_erf(cx_ix(z)));
@@ -184,7 +191,7 @@ vec3 cx_Ei(vec3 z) {
     for (float k = 1.0; k <= 50.0; k++) {
         float f = k/(k*k + 2.0*k + 1.0);
         v = cx_add(v, t);
-        t = cx_norm(cx_mul(cx_smul(t, f), z));
+        t = cx_mul(cx_smul(t, f), z);
     }
     return v;
 }
@@ -192,14 +199,25 @@ vec3 cx_li(vec3 z) {
     return cx_Ei(cx_log(z));
 }
 
+vec3 cx_Tetr(vec3 z, vec3 n) { // Constants are automatically converted to cx form, so have to change them back
+    vec3 v = z;
+    for (int j = 1; j < int(n.x); j++) {
+        v = cx_pow(z, v);
+    }
+    return v;
+}
 /****** End Complex Definitions ******/
+vec3 cx3_norm(vec3 z) {
+    float l = length(z.xy); return vec3(z.xy/l, z.z + log(l));
+}
+
 vec3 hsl2rgb(in vec3 c) {
     vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
     return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));
 }
 
 float ltFunc(vec3 z) {
-    float fct = exp(z.z) * ltSens;
+    float fct = exp(z.z * ltSens);
     return 1.0 - 1.0/(1.0+fct);
 }
 
@@ -207,7 +225,17 @@ float ltFunc(vec3 z) {
 
 void main() {
     vec3 z = vec3(vTexCoord.xy * graphSize - graphSize/2.0 + graphCenter, 0.0);
-    vec3 fz = cx_norm(f(z));
+    vec3 fz = cx3_norm(f(z));
 
-    fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(tau_F) + 1.0, 1.0), 1.0, ltFunc(fz))), 1.0);
+    float hue = mod(atan(fz.y, fz.x)/(tau_F) + 1.0 + hueShift/360.0, 1.0);
+    if (numHueValues > 0) {
+        hue = round(float(numHueValues) * hue) / float(numHueValues);
+    }
+
+    float lightness = ltFunc(fz);
+    if (numLightnessValues > 0) {
+        lightness = round(float(numLightnessValues) * lightness) / float(numLightnessValues);
+    }
+
+    fragColor = fz == fz ? vec4(hsl2rgb(vec3(hue, 1.0, lightness)), 1.0) : vec4(0.5, 0.5, 0.5, 1.0);
 }

@@ -37,6 +37,7 @@ html, body {
 
 #bottom-bar {
     display: flex;
+    align-items: center;
     position: absolute;
     bottom: 0px;
     width: 100%;
@@ -44,19 +45,35 @@ html, body {
     background-color: rgba(255, 255, 255, 0.7);
 }
 
-#lt-sens-container {
+.slider-container {
     display: flex;
-    position: absolute;
-    top: 10px;
-    left: 20px;
-    font-size: 22px;
+    align-items: center;
+    margin-left: 20px;
+    margin-right: 35px;
+    font-size: 18px;
     font-family: 'Latin Modern Math', 'Times New Roman';
 }
 
-#lt-sens-value {
+#lt-sens-value, #hue-shift-value, #hue-values-value, #lt-values-value {
     width: 50px;
 }
 
 #lt-sens-slider {
-    width: 200px;
+    width: 150px;
+}
+
+#hue-shift-slider, #hue-values-slider, #lt-values-slider {
+    width: 130px;
+}
+
+#logmode-button {
+    display: flex;
+    align-items: center;
+    width: 180px;
+    margin-right: 35px;
+    height: 75%;
+    padding-left: 12px;
+    font-family: 'Latin Modern Math', 'Times New Roman';
+    border-radius: 0;
+    font-size: 16px;
 }

@@ -6,7 +6,10 @@ out vec4 fragColor;
 
 uniform vec2 graphSize;
 uniform vec2 graphCenter;
+uniform float hueShift;
 uniform float ltSens;
+uniform int numHueValues;
+uniform int numLightnessValues;
 uniform int zetaTerms;
 
 #define i vec2(0.0, 1.0)
@@ -110,11 +113,14 @@ vec2 cx_digamma_i(vec2 z) {  // asymptotic expansion
     return v;
 }
 vec2 cx_digamma(vec2 z) {
-    if (abs(z.y) > 1.0) {
+    if (abs(z.y) > 2.0) {
         return cx_digamma_i(z);
     }
+    if (z.x < -5.0) {
+        return cx_digamma_i(u-z) - pi_F * cx_cot(pi_F * z);
+    }
     vec2 v = cx(0.0);
-    while (z.x < 3.0) {
+    while (z.x < 6.0) {
         v += cx_rcp(z);
         z += cx(1.0);
     }
@@ -122,14 +128,13 @@ vec2 cx_digamma(vec2 z) {
 }
 
 vec2 cx_faddeeva_i(vec2 z) {
-    vec2 v = cx_div(vec2(-0.01734011, -0.04630644), z - vec2(2.23768773, -1.62594102));
-    v += cx_div(vec2(-0.73991781, 0.83951828), z - vec2(1.46523409, -1.7896203));
-    v += cx_div(vec2(5.84063211, 0.95360275), z - vec2(0.83925397, -1.89199521));
-    v += cx_div(vec2(-5.58337418, -11.2085505), z - vec2(0.27393622, -1.94178704));
-    v += cx_div(vec2(-0.01734011, 0.04630644), z - vec2(-2.23768773, -1.62594102));
-    v += cx_div(vec2(-0.73991781, -0.83951828), z - vec2(-1.46523409, -1.7896203));
-    v += cx_div(vec2(5.84063211, -0.95360275), z - vec2(-0.83925397, -1.89199521));
-    v += cx_div(vec2(-5.58337418, 11.2085505), z - vec2(-0.27393622, -1.94178704));
+    vec2 fa[4] = vec2[](vec2(-0.01734011, -0.04630644), vec2(-0.73991781, 0.83951828), vec2(5.84063211, 0.95360275), vec2(-5.58337418, -11.2085505));
+    vec2 fb[4] = vec2[](vec2(2.23768773, -1.62594102), vec2(1.46523409, -1.7896203), vec2(0.83925397, -1.89199521), vec2(0.27393622, -1.94178704));
+    vec2 v = cx(0.0);
+    for (int j = 0; j < 4; j++) {
+        v += cx_div(fa[j], cx_sub(z, fb[j]));
+        v += cx_div(cx_conj(fa[j]), cx_sub(z, -cx_conj(fb[j])));
+    }
     return v;
 }
 vec2 cx_faddeeva(vec2 z) {
@@ -184,6 +189,14 @@ vec2 cx_Ei(vec2 z) {
 vec2 cx_li(vec2 z) {
     return cx_Ei(cx_log(z));
 }
+
+vec2 cx_Tetr(vec2 z, vec2 n) { // Constants are automatically converted to cx form, so have to change them back
+    vec2 v = z;
+    for (int j = 1; j < int(n.x); j++) {
+        v = cx_pow(z, v);
+    }
+    return v;
+}
 /****** End Complex Definitions ******/
 
 vec3 hsl2rgb(in vec3 c) {
@@ -201,7 +214,16 @@ float ltFunc(vec2 z) {
 void main() {
     vec2 z = vTexCoord.xy * graphSize - graphSize/2.0 + graphCenter;
     vec2 fz = f(z);
-    fz = (fz != fz) ? vec2(1.0/0.0, 0.0) : fz;
 
-    fragColor = vec4(hsl2rgb(vec3(mod(atan(fz.y, fz.x)/(tau_F) + 1.0, 1.0), 1.0, ltFunc(fz))), 1.0);
+    float hue = mod(atan(fz.y, fz.x)/(tau_F) + 1.0 + hueShift/360.0, 1.0);
+    if (numHueValues > 0) {
+        hue = round(float(numHueValues) * hue) / float(numHueValues);
+    }
+
+    float lightness = ltFunc(fz);
+    if (numLightnessValues > 0) {
+        lightness = round(float(numLightnessValues) * lightness) / float(numLightnessValues);
+    }
+
+    fragColor = fz == fz ? vec4(hsl2rgb(vec3(hue, 1.0, lightness)), 1.0) : vec4(0.5, 0.5, 0.5, 1.0);
 }
