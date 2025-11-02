@@ -142,7 +142,7 @@ function changeFunc(f) {
         ind++;
     }
 
-    // Turn a+b into cx_add(a, b) (This is still necessary so that order of operations is preserved)
+    // Turn a+b into cx_add(a, b)
     nf = replaceWithFuncNotation(nf, "+", "add");
 
     // Turn a-b into cx_sub(a, b)
