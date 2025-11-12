@@ -5,13 +5,17 @@ let pixelSize = 0.01;
 let graphMid = [0, 0];
 let logMode = true;
 let funcInput;
+let buffer;
+
+let manualCompile = false;
 let ltSensSlider;
 let hueShiftSlider;
 let hueValuesSlider;
 let ltValuesSlider;
+
 let numHueValues = 0;
 let numLtValues = 0;
-let zetaTerms = 50;
+let maxZetaTerms = 500;
 
 let bVert = `#version 300 es
 precision highp float;
@@ -23,7 +27,7 @@ out vec2 vTexCoord;
 
 void main() {
     vec4 positionVec4 = vec4(aPosition, 1.0);
-    positionVec4.xy = positionVec4.xy * 2.0;
+    positionVec4.xy = vec2(positionVec4.x, -positionVec4.y) * 2.0;
     gl_Position = positionVec4;
 
     vTexCoord = aTexCoord;
@@ -87,9 +91,7 @@ function replaceWithFuncNotation(nf, symbol, funcName) {
         let expInds = getExpressionInds(ind, nf);
 
         // The slice from expInds[0] to expInds[1] is the full addition expression.
-        nf = nf.slice(0, expInds[0]) + funcName + "(" + nf.slice(expInds[0], ind) + "," +
-            nf.slice(ind+1, expInds[1]) + ")" + nf.slice(expInds[1], nf.length);
-        console.log(nf);
+        nf = nf.slice(0, expInds[0]) + funcName + "(" + nf.slice(expInds[0], ind) + "," + nf.slice(ind+1, expInds[1]) + ")" + nf.slice(expInds[1], nf.length);
     }
 
     return nf;
@@ -100,7 +102,8 @@ function changeFunc(f) {
     let indOffset;
 
     // Remove all blank space
-    nf = nf.replace(/\s+/g, '')
+    nf = nf.replace(/\s+/g, '');
+    nf = nf.toLowerCase();
 
     // Replace integers with decimals
     const digitRegex = /\d+/g;
@@ -158,7 +161,7 @@ function changeFunc(f) {
     nf = replaceWithFuncNotation(nf, "^", "pow");
 
     const cx_funcs = ["arcsin", "arccos", "arctan", "arccsc", "arcsec", "arccot", "arsinh", "arcosh", "artanh", "arcsch", "arsech", "arcoth",
-        "digamma", "gamma", "beta", "zeta", "eta", "faddeeva", "erf", "erfi", "lambertw", "W", "Ei", "li", "Tetr",
+        "digamma", "gamma", "beta", "zeta", "eta", "faddeeva", "erf", "erfi", "lambertw", "ei", "li", "tetr",
         "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
         "add", "sub", "mul", "div", "abs", "arg", "sgn", "modulo",
         "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
@@ -167,9 +170,54 @@ function changeFunc(f) {
         nf = nf.replaceAll(new RegExp("(^|[(,])(" + s + ")", "g"), "$1cx_$2");
     }
 
-    console.log(nf);
-
     dcShader = createShader(bVert, getFrag(nf, logMode));
+}
+
+function rgbToHsl(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0; // achromatic
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6; // Normalize hue to 0-1 range
+    }
+
+    return [h, s, l];
+}
+
+function colorToValue(rgb, form) {
+    if (rgb[0] + rgb[1] + rgb[2] == 0) {
+        return [0, 0];
+    }
+
+    let hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+    
+    if (hsl[1] < 0.9) {
+        return [NaN, NaN];
+    }
+
+    // Inverse of y = 1-1/(1+x^ltSens)
+    let mod = Math.pow(hsl[2] / (1-hsl[2]), 1/ltSensSlider.value);
+
+    // Solving for arctan(y, x)
+    let n_angle = (hsl[0] - hueShiftSlider.value/360);
+
+    let val;
+    if (form == 0) {
+        val = [mod*Math.cos(2*Math.PI*n_angle), mod*Math.sin(2*Math.PI*n_angle)];
+    } else {
+        val = [mod, n_angle];
+    }
+    return val;
 }
 
 async function setup() {
@@ -186,6 +234,8 @@ async function setup() {
 
     createCanvas(windowWidth, windowHeight, WEBGL2);
 
+    buffer = createFramebuffer({format: FLOAT});
+
     window.addEventListener('wheel', event => {
         if (event.ctrlKey) {
             event.preventDefault();
@@ -196,14 +246,17 @@ async function setup() {
         funcInput.style.borderColor = "black";
         prevFunc = func;
         func = funcInput.value;
-
-        changeFunc(func);
+        
+        if (!manualCompile) {
+            changeFunc(func);
+        }
     });
 
     funcInput.value = "z";
 }
 
 function draw() {  
+    buffer.begin();
     shader(dcShader);
     numHueValues = hueValuesSlider.value == 0 ? 0 : parseInt(hueValuesSlider.max) + 1 - hueValuesSlider.value;
     numLtValues = ltValuesSlider.value == 0 ? 0 : parseInt(ltValuesSlider.max) + 1 - ltValuesSlider.value;
@@ -214,14 +267,39 @@ function draw() {
     dcShader.setUniform("ltSens", ltSensSlider.value);
     dcShader.setUniform("numHueValues", numHueValues);
     dcShader.setUniform("numLightnessValues", numLtValues);
-    dcShader.setUniform("zetaTerms", zetaTerms);
+    dcShader.setUniform("maxZetaTerms", maxZetaTerms);
 
     document.querySelector("#lt-sens-value").innerHTML = ltSensSlider.value;
     document.querySelector("#hue-shift-value").innerHTML = hueShiftSlider.value + "°";
     document.querySelector("#hue-values-value").innerHTML = numHueValues == 0 ? "∞" : numHueValues;
     document.querySelector("#lt-values-value").innerHTML = numLtValues == 0 ? "∞" : numLtValues + 1;
+
     document.querySelector("#logmode-button").style.backgroundColor = logMode ? "#ddffff" : "#ffdddd";
     document.querySelector("#logmode-value").innerHTML = logMode;
+    document.querySelector("#manual-comp-button").style.backgroundColor = manualCompile ? "#ddffff" : "#ffdddd";
+    document.querySelector("#manual-comp-value").innerHTML = manualCompile;
+    document.querySelector("#compile-button").style.display = manualCompile ? "inline" : "none";
+
+    let mouseCoordX = (graphMid[0] + (mouseX - width/2) * pixelSize).toPrecision(4);
+    let mouseCoordY = (graphMid[1] - (mouseY - height/2) * pixelSize).toPrecision(4);
+    document.querySelector("#z-value-text").innerHTML = "z = " + mouseCoordX + " + " + mouseCoordY + "i";
+
+    let mousePxColor = buffer.get(mouseX, mouseY).slice(0, -1);
+
+    if (mousePxColor[0] + mousePxColor[1] + mousePxColor[2] == 3) {
+        let mousePxValueAbs = colorToValue([1, 1, 1-2**-24], 1)[0];
+        document.querySelector("#fz-value-text").innerHTML = "|f(z)| > " + mousePxValueAbs.toPrecision(4);
+    } else {
+        if (document.querySelector("#rect-value").checked) {
+            let mousePxValue = colorToValue(mousePxColor, 0);
+            document.querySelector("#fz-value-text").innerHTML = "f(z) ≈ " + mousePxValue[0].toPrecision(4) + " + " + mousePxValue[1].toPrecision(4) + "i";
+        }
+
+        if (document.querySelector("#polar-value").checked) {
+            let mousePxValue = colorToValue(mousePxColor, 1);
+            document.querySelector("#fz-value-text").innerHTML = "f(z) ≈ " + mousePxValue[0].toPrecision(4) + "e<sup>" + mousePxValue[1].toPrecision(4) + "iτ</sup>";
+        }
+    }
 
     try {
         plane(width, height);
@@ -231,6 +309,9 @@ function draw() {
         func = prevFunc;
         changeFunc(func);
     }
+
+    buffer.end();
+    image(buffer, -width/2, -height/2);
 }
 
 function mouseWheel(e) {
@@ -250,6 +331,12 @@ function mouseDragged(e) {
     if (![funcInput, ltSensSlider, hueShiftSlider, hueValuesSlider, ltValuesSlider].includes(document.activeElement)) {
         graphMid[0] -= e.movementX * pixelSize;
         graphMid[1] += e.movementY * pixelSize;
+    }
+}
+
+function keyPressed() {
+    if (manualCompile && keyCode === 13) {
+        changeFunc(func);
     }
 }
 

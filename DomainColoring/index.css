@@ -35,26 +35,63 @@ html, body {
     font-family: 'Latin Modern Math', 'Times New Roman';
 }
 
+#coordinate-box {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    right: 0;
+    bottom: 125px;
+    width: 270px;
+    height: 60px;
+    font-size: 18px;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+#coordinate-settings {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    right: 0;
+    bottom: 100px;
+    width: 270px;
+    height: 25px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+label {
+    margin-right: 10px;
+}
+
 #bottom-bar {
     display: flex;
+    flex-direction: column;
     align-items: center;
     position: absolute;
     bottom: 0px;
     width: 100%;
-    height: 50px;
+    height: 100px;
     background-color: rgba(255, 255, 255, 0.7);
+}
+
+#bottom-row-1, #bottom-row-2 {
+    display: flex;
+    height: 50px;
+    margin: 0;
 }
 
 .slider-container {
     display: flex;
     align-items: center;
-    margin-left: 20px;
     margin-right: 35px;
     font-size: 18px;
     font-family: 'Latin Modern Math', 'Times New Roman';
 }
 
-#lt-sens-value, #hue-shift-value, #hue-values-value, #lt-values-value {
+.settings-value {
     width: 50px;
 }
 
@@ -66,14 +103,29 @@ html, body {
     width: 130px;
 }
 
-#logmode-button {
+.settings-button {
     display: flex;
     align-items: center;
-    width: 180px;
+    justify-content: center;
+    padding-left: 15px;
+    padding-right: 15px;
     margin-right: 35px;
     height: 75%;
-    padding-left: 12px;
     font-family: 'Latin Modern Math', 'Times New Roman';
     border-radius: 0;
     font-size: 16px;
+}
+
+#center-button {
+    background-color: #ddddff;
+}
+
+#compile-button {
+    border-radius: 0;
+    text-align: center;
+    padding: 0;
+    margin-left: 15px;
+    width: 30px;
+    height: 30px;
+    background-color: #ddddff;
 }

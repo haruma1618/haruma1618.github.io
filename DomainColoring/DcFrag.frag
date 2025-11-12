@@ -10,7 +10,7 @@ uniform float hueShift;
 uniform float ltSens;
 uniform int numHueValues;
 uniform int numLightnessValues;
-uniform int zetaTerms;
+uniform int maxZetaTerms;
 
 #define i vec2(0.0, 1.0)
 #define u vec2(1.0, 0.0)
@@ -88,10 +88,25 @@ vec2 cx_beta(vec2 z1, vec2 z2) {
 }
 
 vec2 cx_zeta_i(vec2 s) {
+    int j = 1;
+    vec2 a = cx(0.0);
+    vec2 v = cx(0.0);
+    vec2 nv;
+    while (j < maxZetaTerms) {
+        a += cx_pow(cx(float(j)), -s);
+        nv = a + cx_div(cx_pow(cx(float(j) + 0.5), u-s), s-u);
+        if (length(nv - v) < 1e-6) {
+            return nv;
+        }
+        v = nv;
+        j++;
+    }
+
+    /*
     vec2 v = cx_div(cx_pow(cx(float(zetaTerms) + 0.5), u-s), s-u);
     for (int k = 1; k <= zetaTerms; k++) {
         v += cx_pow(cx(float(k)), -s);
-    }
+    }*/
     return v;
 }
 vec2 cx_zeta(vec2 s) {
@@ -171,11 +186,8 @@ vec2 cx_lambertw(vec2 z) {
     }
     return v;
 }
-vec2 cx_W(vec2 z) {
-    return cx_lambertw(z);
-}
 
-vec2 cx_Ei(vec2 z) {
+vec2 cx_ei(vec2 z) {
     vec2 v = cgamma + cx_log(z);
     vec2 t = z;
     for (float k = 1.0; k <= 50.0; k++) {
@@ -187,10 +199,10 @@ vec2 cx_Ei(vec2 z) {
     return v;
 }
 vec2 cx_li(vec2 z) {
-    return cx_Ei(cx_log(z));
+    return cx_ei(cx_log(z));
 }
 
-vec2 cx_Tetr(vec2 z, vec2 n) { // Constants are automatically converted to cx form, so have to change them back
+vec2 cx_tetr(vec2 z, vec2 n) { // Constants are automatically converted to cx form, so have to change them back
     vec2 v = z;
     for (int j = 1; j < int(n.x); j++) {
         v = cx_pow(z, v);

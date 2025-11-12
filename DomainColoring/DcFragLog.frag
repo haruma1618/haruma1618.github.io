@@ -10,7 +10,7 @@ uniform float hueShift;
 uniform float ltSens;
 uniform int numHueValues;
 uniform int numLightnessValues;
-uniform int zetaTerms;
+uniform int maxZetaTerms;
 
 #define u vec3(1.0, 0.0, 0.0)
 #define i vec3(0.0, 1.0, 0.0)
@@ -91,10 +91,24 @@ vec3 cx_beta(vec3 z1, vec3 z2) {
 }
 
 vec3 cx_zeta_i(vec3 s) {
-    vec3 v = cx_div(cx_pow(cx(float(zetaTerms) + 0.5), cx_sub(u, s)), cx_sub(s, u));
+    int j = 1;
+    vec3 a = cx(0.0);
+    vec3 v = cx(0.0);
+    vec3 nv;
+    while (j < maxZetaTerms) {
+        a = cx_add(a, cx_pow(cx(float(j)), cx_neg(s)));
+        nv = cx_add(a, cx_div(cx_pow(cx(float(j) + 0.5), cx_sub(u, s)), cx_sub(s, u)));
+        if (length(nv.xy*exp(nv.z) - v.xy*exp(v.z)) < 1e-6) {
+            return nv;
+        }
+        v = nv;
+        j++;
+    }
+    
+    /*vec3 v = cx_div(cx_pow(cx(float(zetaTerms) + 0.5), cx_sub(u, s)), cx_sub(s, u));
     for (int k = 1; k <= zetaTerms; k++) {
         v = cx_add(v, cx_pow(cx(float(k)), cx_neg(s)));
-    }
+    }*/
     return v;
 }
 vec3 cx_zeta(vec3 s) {
@@ -181,11 +195,8 @@ vec3 cx_lambertw(vec3 z) {
     }
     return v;
 }
-vec3 cx_W(vec3 z) {
-    return cx_lambertw(z);
-}
 
-vec3 cx_Ei(vec3 z) {
+vec3 cx_ei(vec3 z) {
     vec3 v = cx_add(cgamma, cx_log(z));
     vec3 t = z;
     for (float k = 1.0; k <= 50.0; k++) {
@@ -196,10 +207,10 @@ vec3 cx_Ei(vec3 z) {
     return v;
 }
 vec3 cx_li(vec3 z) {
-    return cx_Ei(cx_log(z));
+    return cx_ei(cx_log(z));
 }
 
-vec3 cx_Tetr(vec3 z, vec3 n) { // Constants are automatically converted to cx form, so have to change them back
+vec3 cx_tetr(vec3 z, vec3 n) { // Constants are automatically converted to cx form, so have to change them back
     vec3 v = z;
     for (int j = 1; j < int(n.x); j++) {
         v = cx_pow(z, v);
@@ -208,7 +219,9 @@ vec3 cx_Tetr(vec3 z, vec3 n) { // Constants are automatically converted to cx fo
 }
 /****** End Complex Definitions ******/
 vec3 cx3_norm(vec3 z) {
-    float l = length(z.xy); return vec3(z.xy/l, z.z + log(l));
+    float l = length(z.xy);
+    if (l == 0.0) {return vec3(0.0, 0.0, -1.0/0.0);}
+    return vec3(z.xy/l, z.z + log(l));
 }
 
 vec3 hsl2rgb(in vec3 c) {
