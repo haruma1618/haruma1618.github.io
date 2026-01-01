@@ -11,6 +11,7 @@ uniform float ltSens;
 uniform int numHueValues;
 uniform int numLightnessValues;
 uniform int maxZetaTerms;
+uniform bool expColoring;
 
 #define u vec3(1.0, 0.0, 0.0)
 #define i vec3(0.0, 1.0, 0.0)
@@ -37,12 +38,17 @@ vec3 cx_sub(vec3 a, vec3 b) {return cx_add(a, cx_neg(b));}
 vec3 cx_mul(vec3 a, vec3 b) {return vec3(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x, a.z+b.z);}
 vec3 cx_div(vec3 a, vec3 b) {return vec3(vec2(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y), a.z-b.z);}
 
+float fcx_abs(vec3 z) {return length(z.xy)*exp(z.z);}
+vec3 flatten(vec3 z) {return vec3(z.xy*exp(z.z), 0.0);}
 vec3 cx_smul(vec3 z, float a) {return vec3(z.xy * a, z.z);}
 vec3 cx_ix(vec3 z) {return vec3(-z.y, z.x, z.z);}
 vec3 cx_nix(vec3 z) {return vec3(z.y, -z.x, z.z);}
 vec3 cx_conj(vec3 z) {return vec3(z.x, -z.y, z.z);}
 vec3 cx_rcp(vec3 z) {return vec3(vec2(z.x, -z.y)/(z.x*z.x+z.y*z.y), -z.z);}
-vec3 cx_sgn(vec3 z) {return cx_smul(z, 1.0/(length(z.xy)*exp(z.z)));}
+vec3 cx_abs(vec3 z) {return cx(fcx_abs(z));}
+vec3 cx_sgn(vec3 z) {return cx_smul(z, 1.0/fcx_abs(z));}
+vec3 cx_arg(vec3 z) {return cx(atan(z.y, z.x));}
+vec3 cx_modulo(vec3 z, vec3 m) {return cx_mul(m, fract(flatten(cx_div(z, m))));}
 vec3 cx_exp(vec3 z) {float theta = mod(z.y*exp(z.z), tau_F); return vec3(cos(theta), sin(theta), z.x*exp(z.z));}
 vec3 cx_log(vec3 z) {return vec3(log(length(z.xy))+z.z, atan(z.y, z.x), 0.0);}
 vec3 cx_ln(vec3 z) {return cx_log(z);}
@@ -139,7 +145,7 @@ vec3 cx_digamma(vec3 z) {
         return cx_digamma_i(z);
     }
     if (z.x*exp(z.z) < -5.0) {
-        return cx_digamma_i(cx_sub(u, z)) - cx_smul(cx_cot(cx_smul(z, pi_F)), pi_F);
+        return cx_sub(cx_digamma_i(cx_sub(u, z)), cx_smul(cx_cot(cx_smul(z, pi_F)), pi_F));
     }
     vec3 v = cx(0.0);
     while (z.x*exp(z.z) < 6.0) {
@@ -182,29 +188,44 @@ vec3 cx_erfi(vec3 z) {
 vec3 cx_lambertw(vec3 z) {
     int iters = 0;
     vec3 v = z.x*exp(z.z) > -1.0/e_F ? cx(0.0) : cx_smul(cx_log(z), pow(e_F, -1.0/e_F));
-    vec3 nv;
+    vec3 pv;
     while (iters < 20) {
         vec3 expv = cx_exp(v);
         vec3 v_expv = cx_mul(v, expv);
-        nv = cx_sub(v, cx_div(cx_sub(v_expv, z), cx_sub(cx_add(v_expv, expv), cx_div(cx_mul(cx_add(v, cx(2.0)), cx_sub(v_expv, z)), cx_add(cx_smul(v, 2.0), cx(2.0))))));
-        if (length(nv.xy*exp(nv.z) - v.xy*exp(v.z)) < 1e-6) {
-            return nv;
-        }
-        v = nv;
+        pv = v;
+        v = cx_sub(v, cx_div(cx_sub(v_expv, z), cx_sub(cx_add(v_expv, expv), cx_div(cx_mul(cx_add(v, cx(2.0)), cx_sub(v_expv, z)), cx_add(cx_smul(v, 2.0), cx(2.0))))));
+        if (length(fcx_abs(v) - fcx_abs(pv)) < 1e-6) {return v;}
         iters++;
     }
     return v;
 }
 
 vec3 cx_ei(vec3 z) {
-    vec3 v = cx_add(cgamma, cx_log(z));
-    vec3 t = z;
-    for (float k = 1.0; k <= 50.0; k++) {
-        float f = k/(k*k + 2.0*k + 1.0);
-        v = cx_add(v, t);
-        t = cx_mul(cx_smul(t, f), z);
+    if (fcx_abs(z) < 10.0) {
+        vec3 v = cx_add(cgamma, cx_log(z));
+        vec3 t = z;
+        vec3 pv;
+        for (float k = 1.0; k <= 35.0; k++) {
+            // Ratio between term & next term = z^(n+1)/((n+1)(n+1)!) * n*n!/z^n = zn/(n+1)^2
+            float f = k/(k*k + 2.0*k + 1.0);
+            pv = v;
+            v = cx_add(v, t);
+            if (length(fcx_abs(v) - fcx_abs(pv)) < 1e-6) {return v;}
+            t = cx_mul(cx_smul(t, f), z);
+        }
+        return v;
+    } else {
+        vec3 v = cx_ix(cx(sign(z.y)*pi_F));
+        vec3 t = cx_div(cx_exp(z), z);
+        vec3 pv;
+        for (float k = 1.0; k <= min(20.0, floor(fcx_abs(z) + 1.0)); k++) {
+            pv = v;
+            v = cx_add(v, t);
+            if (length(fcx_abs(v) - fcx_abs(pv)) < 1e-6) {return v;}
+            t = cx_mul(t, cx_smul(cx_rcp(z), k));
+        }
+        return v;
     }
-    return v;
 }
 vec3 cx_li(vec3 z) {
     return cx_ei(cx_log(z));
@@ -230,7 +251,12 @@ vec3 hsl2rgb(in vec3 c) {
 }
 
 float ltFunc(vec3 z) {
-    float fct = exp(z.z * ltSens);
+    float fct;
+    if (!expColoring) {
+        fct = exp(z.z*ltSens);
+    } else {
+        fct = z.z > 0.0 ? z.z*ltSens + 1.0 : 1.0 / (-z.z*ltSens + 1.0);
+    }
     return 1.0 - 1.0/(1.0+fct);
 }
 

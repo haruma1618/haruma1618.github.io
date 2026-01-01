@@ -99,7 +99,11 @@ label {
     width: 150px;
 }
 
-#hue-shift-slider, #hue-values-slider, #lt-values-slider {
+#hue-shift-slider {
+    width: 130px;
+}
+
+#hue-values-slider, #lt-values-slider {
     width: 130px;
 }
 
@@ -120,12 +124,25 @@ label {
     background-color: #ddddff;
 }
 
-#compile-button {
+#compile-button, #info-button, #hide-bar-button {
+    font-family: 'Latin Modern Math', 'Times New Roman';
+    font-size: 16px;
     border-radius: 0;
     text-align: center;
     padding: 0;
     margin-left: 15px;
     width: 30px;
     height: 30px;
+}
+
+#hide-bar-button {
+    font-size: 14px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: gray;
+}
+
+#compile-button {
     background-color: #ddddff;
 }

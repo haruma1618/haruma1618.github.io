@@ -4,8 +4,10 @@ let prevFunc = func;
 let pixelSize = 0.01;
 let graphMid = [0, 0];
 let logMode = true;
+let expColoring = false;
 let funcInput;
 let buffer;
+let hideBottom = false;
 
 let manualCompile = false;
 let ltSensSlider;
@@ -34,6 +36,7 @@ void main() {
 }`;
 let bFrag;
 let bFragLog;
+console.error = () => {}; // Prevent 10+ errors appearing for every keypress
 
 function getFrag(f, logMode) {
     return (logMode ? bFragLog : bFrag).replace("$$", f);
@@ -165,7 +168,6 @@ function changeFunc(f) {
         "sqrt", "conj", "sinh", "cosh", "tanh", "sech", "csch", "coth",
         "add", "sub", "mul", "div", "abs", "arg", "sgn", "modulo",
         "exp", "log", "cos", "sin", "tan", "pow", "sec", "csc", "cot", "ln"];
-
     for (let s of cx_funcs) {
         nf = nf.replaceAll(new RegExp("(^|[(,])(" + s + ")", "g"), "$1cx_$2");
     }
@@ -194,9 +196,9 @@ function rgbToHsl(r, g, b) {
     return [h, s, l];
 }
 
-function colorToValue(rgb, form) {
+function colorToValue(rgb) {
     if (rgb[0] + rgb[1] + rgb[2] == 0) {
-        return [0, 0];
+        return [-Infinity, 0];
     }
 
     let hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
@@ -205,19 +207,19 @@ function colorToValue(rgb, form) {
         return [NaN, NaN];
     }
 
-    // Inverse of y = 1-1/(1+x^ltSens)
-    let mod = Math.pow(hsl[2] / (1-hsl[2]), 1/ltSensSlider.value);
+    let ln_mod;
+    if (!expColoring) {
+        // Inverse of y = 1-1/(1+x^ltSens)
+        ln_mod = Math.log(hsl[2] / (1-hsl[2])) / ltSensSlider.value;
+    } else {
+        // Inverse of y = 1-1/(2+ln(x)*ltSens) for y>0.5, y = 1-1/(1+1/(1-ln(x)*ltSens)) for y<=0.5
+        ln_mod = hsl[2] > 0.5 ? (2*hsl[2]-1)/(1-hsl[2]) / ltSensSlider.value : (2*hsl[2]-1)/(hsl[2]) / ltSensSlider.value;
+    }
 
     // Solving for arctan(y, x)
     let n_angle = (hsl[0] - hueShiftSlider.value/360);
 
-    let val;
-    if (form == 0) {
-        val = [mod*Math.cos(2*Math.PI*n_angle), mod*Math.sin(2*Math.PI*n_angle)];
-    } else {
-        val = [mod, n_angle];
-    }
-    return val;
+    return [ln_mod, n_angle];
 }
 
 async function setup() {
@@ -234,11 +236,11 @@ async function setup() {
 
     createCanvas(windowWidth, windowHeight, WEBGL2);
 
-    buffer = createFramebuffer({format: FLOAT});
+    buffer = createFramebuffer({format: FLOAT});  // Allows for higher color precision than just 0-255
 
     window.addEventListener('wheel', event => {
         if (event.ctrlKey) {
-            event.preventDefault();
+            event.preventDefault(); // Prevent zooming
         }
     }, {passive: false});
 
@@ -268,6 +270,7 @@ function draw() {
     dcShader.setUniform("numHueValues", numHueValues);
     dcShader.setUniform("numLightnessValues", numLtValues);
     dcShader.setUniform("maxZetaTerms", maxZetaTerms);
+    dcShader.setUniform("expColoring", expColoring);
 
     document.querySelector("#lt-sens-value").innerHTML = ltSensSlider.value;
     document.querySelector("#hue-shift-value").innerHTML = hueShiftSlider.value + "°";
@@ -278,30 +281,42 @@ function draw() {
     document.querySelector("#logmode-value").innerHTML = logMode;
     document.querySelector("#manual-comp-button").style.backgroundColor = manualCompile ? "#ddffff" : "#ffdddd";
     document.querySelector("#manual-comp-value").innerHTML = manualCompile;
+    document.querySelector("#exp-coloring-button").style.backgroundColor = expColoring ? "#ddffff" : "#ffdddd";
+    document.querySelector("#exp-coloring-value").innerHTML = expColoring;
     document.querySelector("#compile-button").style.display = manualCompile ? "inline" : "none";
 
     let mouseCoordX = (graphMid[0] + (mouseX - width/2) * pixelSize).toPrecision(4);
     let mouseCoordY = (graphMid[1] - (mouseY - height/2) * pixelSize).toPrecision(4);
     document.querySelector("#z-value-text").innerHTML = "z = " + mouseCoordX + " + " + mouseCoordY + "i";
 
-    let mousePxColor = buffer.get(mouseX, mouseY).slice(0, -1);
+    let mousePxColor = buffer.get(mouseX, mouseY).slice(0, -1);  // Get color at mouse position
+    let fz_txt = document.querySelector("#fz-value-text");
 
+    let mousePxValue = colorToValue(mousePxColor);  // f(z) at mouse position
     if (mousePxColor[0] + mousePxColor[1] + mousePxColor[2] == 3) {
-        let mousePxValueAbs = colorToValue([1, 1, 1-2**-24], 1)[0];
-        document.querySelector("#fz-value-text").innerHTML = "|f(z)| > " + mousePxValueAbs.toPrecision(4);
+        // Highest possible value that can be represented
+        let maxPxValueAbs = colorToValue([1, 1, 1-2**-24], 1)[0] * Math.log10(Math.E);
+        fz_txt.innerHTML = "|f(z)| > " + Math.pow(10, maxPxValueAbs-Math.floor(maxPxValueAbs)).toPrecision(4) + "e" + Math.floor(maxPxValueAbs);
+    } else if (mousePxValue[0] > 64*Math.log(2)) {  // Value is above (arbitrary) limit - always display polar
+        let valExp = mousePxValue[0] * Math.log10(Math.E);
+        let valMnt = Math.pow(10, valExp - Math.floor(valExp));
+        valExp = Math.abs(Math.floor(valExp));
+        
+        let e_sign = mousePxValue[0] >= 0 ? "e+" : "e-";
+        fz_txt.innerHTML = "f(z) ≈ " + valMnt.toPrecision(4) + e_sign + valExp + "e<sup>" + mousePxValue[1].toPrecision(4) + "iτ</sup>";
     } else {
         if (document.querySelector("#rect-value").checked) {
-            let mousePxValue = colorToValue(mousePxColor, 0);
-            document.querySelector("#fz-value-text").innerHTML = "f(z) ≈ " + mousePxValue[0].toPrecision(4) + " + " + mousePxValue[1].toPrecision(4) + "i";
-        }
+            let reVal = Math.exp(mousePxValue[0])*Math.cos(2*Math.PI*mousePxValue[1]);
+            let imVal = Math.exp(mousePxValue[0])*Math.sin(2*Math.PI*mousePxValue[1]);
 
+            fz_txt.innerHTML = "f(z) ≈ " + reVal.toPrecision(4) + " + " + imVal.toPrecision(4) + "i";
+        }
         if (document.querySelector("#polar-value").checked) {
-            let mousePxValue = colorToValue(mousePxColor, 1);
-            document.querySelector("#fz-value-text").innerHTML = "f(z) ≈ " + mousePxValue[0].toPrecision(4) + "e<sup>" + mousePxValue[1].toPrecision(4) + "iτ</sup>";
+            fz_txt.innerHTML = "f(z) ≈ " + Math.exp(mousePxValue[0]).toPrecision(4) + "e<sup>" + mousePxValue[1].toPrecision(4) + "iτ</sup>";
         }
     }
 
-    try {
+    try { // This feels stupid, but it works
         plane(width, height);
     } catch (error) {
         funcInput.style.borderColor = "red";

@@ -11,6 +11,7 @@ uniform float ltSens;
 uniform int numHueValues;
 uniform int numLightnessValues;
 uniform int maxZetaTerms;
+uniform bool expColoring;
 
 #define i vec2(0.0, 1.0)
 #define u vec2(1.0, 0.0)
@@ -32,7 +33,7 @@ vec2 cx_sub(vec2 a, vec2 b) {return vec2(a.x-b.x, a.y-b.y);}
 vec2 cx_mul(vec2 a, vec2 b) {return vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x);}
 vec2 cx_div(vec2 a, vec2 b) {return vec2(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y);}
 
-// Other supported functions: round, floor, ceil, min, max, clamp
+// Other supported functions: round, floor, ceil, min, max, clamp (Only supported without log mode)
 vec2 cx_ix(vec2 z) {return vec2(-z.y, z.x);}
 vec2 cx_conj(vec2 z) {return vec2(z.x, -z.y);}
 vec2 cx_rcp(vec2 z) {return vec2(z.x, -z.y)/(z.x*z.x+z.y*z.y);}
@@ -217,7 +218,13 @@ vec3 hsl2rgb(in vec3 c) {
 }
 
 float ltFunc(vec2 z) {
-    float fct = pow(length(z), ltSens);
+    float fct;
+    if (!expColoring) {
+        fct = pow(length(z), ltSens);
+    } else {
+        fct = length(z) > 1.0 ? log(length(z))*ltSens + 1.0 : 1.0 / (-log(length(z))*ltSens + 1.0);
+    }
+
     return 1.0 - 1.0/(1.0+fct);
 }
 

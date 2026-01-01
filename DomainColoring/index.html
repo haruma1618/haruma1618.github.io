@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Domain Coloring</title>
     <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="favicon.ico">
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/p5@2.0.5/lib/p5.min.js" type="text/javascript"></script>
@@ -13,42 +14,55 @@
         <div id="function-input-container">
             <span id="fz-text">f(z) = </span><input type="text" id="function-input" placeholder="Enter a complex function of z">
             <button id="compile-button" onClick="changeFunc(func)">✓</button>
+            <button id="info-button" onClick='alert("This is a tool to visualize complex functions with domain coloring, made with p5.js and GLSL. \n\n" + 
+                "--- Supported Functions ---\n" +
+                "- Basic: +, -, *, /, ^, exp, log/ln\n\n" +
+                "- Trig/hyperbolic: sin, cos, tan, sec, csc, cot, arcsin, arccos, arctan, arcsec, arccsc, arccot, " +
+                "sinh, cosh, tanh, sech, csch, coth, arsinh, arcosh, artanh, arsech, arcsch, arcoth\n\n" +
+                "- Non-elementary: erf, erfi, gamma, digamma, beta(z1, z2), zeta, eta, ei, li, faddeeva, lambertw, tetr(z, n)\n\n" +
+                "- Misc.: modulo, abs, arg, sgn, sqrt, conj")'>?</button>
         </div>
     </div>
-    <div id="coordinate-box">
-        <span id="z-value-text"></span>
-        <span id="fz-value-text"></span>
-    </div>
-    <div id="coordinate-settings">
-        <input type="radio" name="fz-value-type" id="rect-value" value="rect" checked="checked">
-        <label for="rect-value">Rectangular</label>
-        <input type="radio" name="fz-value-type" id="polar-value" value="polar">
-        <label for="rect-value">Polar</label>
-    </div>
-    <div id="bottom-bar">
-        <div id="bottom-row-1">
-            <div class="slider-container" id="lt-sens-container">
-                <span id="lt-sens-text">Lightness sensitivity:&nbsp;</span><span id="lt-sens-value" class="settings-value"></span>
-                <input type="range" min="0" max="1" step="0.01" value="0.5" id="lt-sens-slider" class="settings-slider">
+    <div id="bottom-bars">
+        <div id="coordinate-box">
+            <span id="z-value-text"></span>
+            <span id="fz-value-text"></span>
+        </div>
+        <div id="coordinate-settings">
+            <input type="radio" name="fz-value-type" id="rect-value" value="rect" checked="checked">
+            <label for="rect-value">Rectangular</label>
+            <input type="radio" name="fz-value-type" id="polar-value" value="polar">
+            <label for="rect-value">Polar</label>
+        </div>
+        <div id="bottom-bar">
+            <div id="bottom-row-1">
+                <div class="slider-container" id="lt-sens-container">
+                    <span id="lt-sens-text">Lightness sensitivity:&nbsp;</span><span id="lt-sens-value" class="settings-value"></span>
+                    <input type="range" min="0" max="1" step="0.01" value="0.5" id="lt-sens-slider" class="settings-slider">
+                </div>
+                <div class="slider-container" id="hue-shift-container">
+                    <span id="hue-shift-text">Hue shift:&nbsp;</span><span id="hue-shift-value" class="settings-value"></span>
+                    <input type="range" min="0" max="360" step="1" value="0" id="hue-shift-slider" class="settings-slider">
+                </div>
+                <div class="slider-container" id="hue-values-container">
+                    <span id="hue-values-text"># Hue values:&nbsp;</span><span id="hue-values-value" class="settings-value"></span>
+                    <input type="range" min="0" max="64" step="1" value="0" id="hue-values-slider" class="settings-slider">
+                </div>
+                <div class="slider-container" id="lt-values-container">
+                    <span id="lt-values-text"># Lightness values:&nbsp;</span><span id="lt-values-value" class="settings-value"></span>
+                    <input type="range" min="0" max="63" step="1" value="0" id="lt-values-slider" class="settings-slider">
+                </div>
             </div>
-            <div class="slider-container" id="hue-shift-container">
-                <span id="hue-shift-text">Hue shift:&nbsp;</span><span id="hue-shift-value" class="settings-value"></span>
-                <input type="range" min="0" max="360" step="1" value="0" id="hue-shift-slider" class="settings-slider">
-            </div>
-            <div class="slider-container" id="hue-values-container">
-                <span id="hue-values-text"># Hue values:&nbsp;</span><span id="hue-values-value" class="settings-value"></span>
-                <input type="range" min="0" max="64" step="1" value="0" id="hue-values-slider" class="settings-slider">
-            </div>
-            <div class="slider-container" id="lt-values-container">
-                <span id="lt-values-text"># Lightness values:&nbsp;</span><span id="lt-values-value" class="settings-value"></span>
-                <input type="range" min="0" max="63" step="1" value="0" id="lt-values-slider" class="settings-slider">
+            <div id="bottom-row-2">
+                <button id="logmode-button" class="settings-button" onClick="logMode=!logMode; changeFunc(func)">Use LogMode:&nbsp;<span id="logmode-value"></span></button>
+                <button id="manual-comp-button" class="settings-button" onClick="manualCompile=!manualCompile">Manual compile:&nbsp;<span id="manual-comp-value"></span></button>
+                <button id="exp-coloring-button" class="settings-button" onClick="expColoring=!expColoring">Exponential coloring mode:&nbsp;<span id="exp-coloring-value"></span></button>
+                <button id="center-button" class="settings-button" onClick="graphMid=[0, 0]">Center at origin&nbsp;</button>
             </div>
         </div>
-        <div id="bottom-row-2">
-            <button id="logmode-button" class="settings-button" onClick="logMode=!logMode; changeFunc(func)">Use LogMode:&nbsp;<span id="logmode-value"></span></button>
-            <button id="manual-comp-button" class="settings-button" onClick="manualCompile=!manualCompile">Manual compile:&nbsp;<span id="manual-comp-value"></span></button>
-            <button id="center-button" class="settings-button" onClick="graphMid=[0, 0]">Center at origin&nbsp;</button>
-        </div>
+    </div>
+    <div id="control-buttons">
+        <button id="hide-bar-button" onClick="this.innerHTML = hideBottom ? '▲' : '▼'; document.querySelector('#bottom-bars').style.display = hideBottom ? 'flex' : 'none'; hideBottom = !hideBottom"></button>
     </div>
 </body>
 </html>
