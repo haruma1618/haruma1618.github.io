@@ -8,6 +8,7 @@ let expColoring = false;
 let funcInput;
 let buffer;
 let hideBottom = false;
+let showInfoPopup = false;
 
 let manualCompile = false;
 let ltSensSlider;
@@ -284,6 +285,7 @@ function draw() {
     document.querySelector("#exp-coloring-button").style.backgroundColor = expColoring ? "#ddffff" : "#ffdddd";
     document.querySelector("#exp-coloring-value").innerHTML = expColoring;
     document.querySelector("#compile-button").style.display = manualCompile ? "inline" : "none";
+    document.querySelector("#info-popup").style.display = showInfoPopup ? "flex" : "none";
 
     let mouseCoordX = (graphMid[0] + (mouseX - width/2) * pixelSize).toPrecision(4);
     let mouseCoordY = (graphMid[1] - (mouseY - height/2) * pixelSize).toPrecision(4);
@@ -330,15 +332,17 @@ function draw() {
 }
 
 function mouseWheel(e) {
-    let zoomFactor = 1.05;
-    if (e.delta > 0) { // zoom out
-        pixelSize *= zoomFactor;
-        graphMid[0] -= (mouseX - width/2) * pixelSize * (1 - 1/zoomFactor);
-        graphMid[1] += (mouseY - height/2) * pixelSize * (1 - 1/zoomFactor);
-    } else { // zoom in
-        pixelSize /= zoomFactor;
-        graphMid[0] -= (mouseX - width/2) * pixelSize * (1 - zoomFactor);
-        graphMid[1] += (mouseY - height/2) * pixelSize * (1 - zoomFactor);
+    if (!showInfoPopup) {
+        let zoomFactor = 1.05;
+        if (e.delta > 0) { // zoom out
+            pixelSize *= zoomFactor;
+            graphMid[0] -= (mouseX - width/2) * pixelSize * (1 - 1/zoomFactor);
+            graphMid[1] += (mouseY - height/2) * pixelSize * (1 - 1/zoomFactor);
+        } else { // zoom in
+            pixelSize /= zoomFactor;
+            graphMid[0] -= (mouseX - width/2) * pixelSize * (1 - zoomFactor);
+            graphMid[1] += (mouseY - height/2) * pixelSize * (1 - zoomFactor);
+        }
     }
 }
 

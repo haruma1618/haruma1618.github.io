@@ -1,0 +1,31 @@
+div[contenteditable] {
+    display: inline-block;
+    width: 100px;
+    height: 20px;
+    resize: none;
+    overflow: hidden;
+    border: 1px solid black;
+    position: relative;
+    top: 5px;
+}
+
+#password {
+    width: 1000px;
+}
+
+#secret-text {
+    position: fixed;
+    color: #fffaff;
+    user-select: none;
+}
+
+.password-rule {
+    opacity: 0;
+
+    transition: opacity 1s ease-in-out;
+}
+
+.password-rule.show {
+    opacity: 1;
+    height: auto;
+}

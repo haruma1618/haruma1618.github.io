@@ -4,7 +4,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Domain Coloring</title>
     <link rel="stylesheet" href="index.css">
-    <link rel="icon" href="favicon.ico">
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/p5@2.0.5/lib/p5.min.js" type="text/javascript"></script>
@@ -13,14 +12,8 @@
     <div id="top-bar">
         <div id="function-input-container">
             <span id="fz-text">f(z) = </span><input type="text" id="function-input" placeholder="Enter a complex function of z">
-            <button id="compile-button" onClick="changeFunc(func)">✓</button>
-            <button id="info-button" onClick='alert("This is a tool to visualize complex functions with domain coloring, made with p5.js and GLSL. \n\n" + 
-                "--- Supported Functions ---\n" +
-                "- Basic: +, -, *, /, ^, exp, log/ln\n\n" +
-                "- Trig/hyperbolic: sin, cos, tan, sec, csc, cot, arcsin, arccos, arctan, arcsec, arccsc, arccot, " +
-                "sinh, cosh, tanh, sech, csch, coth, arsinh, arcosh, artanh, arsech, arcsch, arcoth\n\n" +
-                "- Non-elementary: erf, erfi, gamma, digamma, beta(z1, z2), zeta, eta, ei, li, faddeeva, lambertw, tetr(z, n)\n\n" +
-                "- Misc.: modulo, abs, arg, sgn, sqrt, conj")'>?</button>
+            <button id="compile-button" onClick="changeFunc(func)" style="display: none">✓</button>
+            <button id="info-button" onClick='showInfoPopup = true'>?</button>
         </div>
     </div>
     <div id="bottom-bars">
@@ -62,7 +55,22 @@
         </div>
     </div>
     <div id="control-buttons">
-        <button id="hide-bar-button" onClick="this.innerHTML = hideBottom ? '▲' : '▼'; document.querySelector('#bottom-bars').style.display = hideBottom ? 'flex' : 'none'; hideBottom = !hideBottom"></button>
+        <button id="hide-bar-button" onClick="this.innerHTML = hideBottom ? '▲' : '▼'; document.querySelector('#bottom-bars').style.display = hideBottom ? 'flex' : 'none'; hideBottom = !hideBottom">▲</button>
+    </div>
+    <div id="info-popup-container">
+    <div id="info-popup" style="display: none">
+        <button id="close-info-button" onClick="showInfoPopup = false">X</button>
+        <h2>Domain Coloring Plotter</h2>
+        <p>This is a tool for visualizing complex functions using domain coloring, made with p5.js and GLSL.
+        More about domain coloring:
+        <a href="https://en.wikipedia.org/wiki/Domain_coloring" target="_blank" rel="noopener noreferrer" style="color: #555">https://en.wikipedia.org/wiki/Domain_coloring</a><br></p>
+        <h3>Supported Functions</h3><br>
+        <p>- Basic: +, -, *, /, ^, exp, log/ln<br>
+        - Trig/hyperbolic: sin, cos, tan, sec, csc, cot, arcsin, arccos, arctan, arcsec, arccsc, arccot,
+        sinh, cosh, tanh, sech, csch, coth, arsinh, arcosh, artanh, arsech, arcsch, arcoth<br>
+        - Non-elementary: erf, erfi, gamma, digamma, beta(z1, z2), zeta, eta, ei, li, faddeeva, lambertw, tetr(z, n)<br>
+        - Miscellaneous: modulo, abs, arg, sgn, sqrt, conj</p>
+    </div>
     </div>
 </body>
 </html>
