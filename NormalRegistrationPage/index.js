@@ -25,7 +25,10 @@ function generateRules() {
     "Your password must include the secret text hidden on this page.",
     "The sum of all the Roman numerals in your password must equal " + stateVars.romanNumSum + ". (Currently: <span id='romanNumSum'></span>)",
     "The average value of the chess pieces in your password must be between 3.1 and 3.2. (Currently: <span id='chessAvg'></span>)",
-    "The number of digits, capital letters, and lowercase letters in your password must be in an arithmetic progression. (Currently: <span id='charProg'></span>)"];
+    "The number of digits, capital letters, and lowercase letters in your password must be in an arithmetic progression. (Currently: <span id='charProg'></span>)",
+    "Your password must include at least 10 zero-width spaces. Zero-width spaces must only be placed at prime indices.",
+    "Your password must include the exact value of this integral: <img src='integral19.png' alt='Ok whatever, the answer is -2' width='400'>",
+    "Your password must include the following string: \"I am 100% certain that this password is fully secure, and I will definitely not reuse this password on other websites\""];
 }
 
 let rules;
@@ -82,8 +85,21 @@ const ruleChecks = [
     (p) => chessValueAvg(p) >= 3.1 && chessValueAvg(p) <= 3.2,
     (p) => {let prog = characterProg(p);
         return (prog[1]-prog[0] == prog[2]-prog[1]);
-    }
+    },
+    (p) => countChars(p, (s) => s == "​") >= 10 && checkZWSPIndices(p),
+    (p) => p.includes("-2"),
+    (p) => p.includes("I am 100% certain that this password is fully secure, and I will definitely not reuse this password on other websites")
 ];
+
+function checkZWSPIndices(p) {
+    for (let i = 0; i < p.length; i++) {
+        if (p[i] == "​" && !isPrime(i)) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 function romanNumTotal(str) {
     const numMap = new Map([["CM", 900], ["M", 1000], ["CD", 400], ["D", 500], ["XC", 90], ["C", 100],
@@ -118,7 +134,7 @@ function chessValueAvg(str) {
 
 function characterProg(p) {
     let arr = [countChars(p, (s) => /[0-9]/.test(s)), countChars(p, (s) => /[A-Z]/.test(s)), countChars(p, (s) => /[a-z]/.test(s))];
-    arr.sort();
+    arr.sort((a, b) => a - b);
     return arr;
 }
 
@@ -131,7 +147,7 @@ function isPrime(num) {
 }
 
 function numToB64(n) {
-    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!?";
+    const chars = "0123456789ABEFGHIJKLNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!?*$#";
     let b = chars.length;
     let str = '';
     
@@ -166,7 +182,7 @@ function countChars(str, func) {
     return n;
 }
 
-let auto = 0;
+let auto = 19;
 let highestRule = 0;
 let pass;
 
