@@ -182,7 +182,7 @@ function countChars(str, func) {
     return n;
 }
 
-let auto = 19;
+let auto = 0;
 let highestRule = 0;
 let pass;
 
@@ -210,11 +210,6 @@ function onPassInput() {
                 if (ruleChecks[i](pass) || i < auto) {
                     txtElem.style.color = "green";
                 } else {
-                    if (i >= highestRule) {
-                        highestRule = i;
-                        txtElem.after(document.querySelector("#submit-btn"));
-                    }
-
                     txtElem.style.color = "red";
                     if (i == 4) {
                         txtElem.style.color = stateVars.randomColor;
