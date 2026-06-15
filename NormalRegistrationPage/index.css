@@ -28,4 +28,5 @@ div[contenteditable] {
 .password-rule.show {
     opacity: 1;
     height: auto;
+    font-size: medium;
 }
